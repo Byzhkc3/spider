@@ -2,7 +2,7 @@ Author: moyh
 Date: 2016/9/7
 
 alter1:
-    shixin_spider 查询接口去掉了协程，改为流程，用时为改变的2倍
+    shixin_spider 查询接口去掉了协程，改为流程
 
 alter2：
     shixin_spider 遍历id爬虫整合到一块
@@ -16,7 +16,6 @@ alter4:
 
 思考想改进的地方：
 1 log的id过多，列举的显示臃肿
-2
 
 
 遇到的bug:
