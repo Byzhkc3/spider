@@ -1,10 +1,12 @@
 #coding=utf-8
-import os
 import re
 import json
 import time
 import random
 import sys
+
+from public.insert_dicts import insertDicts
+
 reload(sys)
 sys.path.append('../')
 from math import ceil
@@ -14,6 +16,7 @@ from public.share_func import basicRequest, \
     userAgent, getIp, recogImage, clawLog, makeDirs
 from configuration.columns_cfg import valid_keys, invalid_columns
 
+_timeout = 5
 
 class ZhiXingSpider(object):
     """根据身份证号/企业号查询执行信息,流程版"""
@@ -31,7 +34,6 @@ class ZhiXingSpider(object):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         }
         self.id_seq = list()
-        self.threads_cookies = dict()   # 线程字典
         self.cookies = dict()           # "全局"cookies
         self.valid_items = list()       # 有效id
         self.invalid_items = list()     # 无效/出错id
@@ -57,7 +59,6 @@ class ZhiXingSpider(object):
 
         def getSessionID():
             url_one = 'http://zhixing.court.gov.cn/search/security/jcaptcha.jpg?87'
-            url_two = 'http://zhixing.court.gov.cn/search/security/jcaptcha.jpg?3'
             self.headers['Referer'] = 'http://zhixing.court.gov.cn/'
             options_one = {'method':'get', 'url':url_one, 'cookies':self.cookies, 'headers':self.headers}
 
@@ -79,8 +80,7 @@ class ZhiXingSpider(object):
         """
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
         url =  'http://zhixing.court.gov.cn/search/security/jcaptcha.jpg?' + str(random.randint(0,99))
-        options = {'method':'get', 'url':url,
-                   'cookies':self.cookies, 'headers':self.headers}
+        options = {'method':'get', 'url':url, 'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response and len(response.text):
@@ -120,7 +120,7 @@ class ZhiXingSpider(object):
 
         url = 'http://zhixing.court.gov.cn/search/newsearch'
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
-        options = {'method':'post', 'url':url, 'form':form, 'timeout':5,
+        options = {'method':'post', 'url':url, 'form':form, 'timeout':_timeout,
                    'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options, resend_times=0)
@@ -171,7 +171,7 @@ class ZhiXingSpider(object):
 
         url = 'http://zhixing.court.gov.cn/search/newsearch?j_captcha=' + pw_code
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
-        options = {'method':'post', 'url':url, 'form':form, 'timeout':5,
+        options = {'method':'post', 'url':url, 'form':form, 'timeout':_timeout,
                    'cookies': self.cookies, 'headers':self.headers}
 
         response = basicRequest(options, resend_times=0)
@@ -231,7 +231,7 @@ class ZhiXingSpider(object):
         params = {'id':sys_id, 'j_captcha':pw_code}
         url = 'http://zhixing.court.gov.cn/search/newdetail'
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
-        options = {'method': 'get', 'params':params, 'url': url, 'timeout':5,
+        options = {'method': 'get', 'params':params, 'url': url, 'timeout':_timeout,
                    'cookies': self.cookies, 'headers': self.headers}
 
         response = basicRequest(options, resend_times=0)
@@ -254,12 +254,11 @@ class ZhiXingSpider(object):
 
     def saveItems(self):
         """  保存数据到mysql
-        :return: None """
-
-        # valid_columns = valid_keys.values()
-
+        :return: None
+        """
         valid_num  = len(self.valid_items)
         invalid_num = len(self.invalid_items)
+        valid_columns = valid_keys.values()
 
         # if valid_num:
         #     table_name = 't_zhixing_valid'
@@ -277,8 +276,8 @@ class ZhiXingSpider(object):
 def apiZhiXingSearch(name='', card_num='', thread_num=3):
     """ 根据身份证号/企业号查询接口
     :param card_num:身份证号/企业号
-    :return: dict(valid=[], invalid=[]) / {} """
-
+    :return: dict(t_zhixing_valid=[], t_zhixing_invalid=[])
+    """
     makeDirs()
     if not name and not name:
         raise ValueError
@@ -297,7 +296,7 @@ def apiZhiXingSearch(name='', card_num='', thread_num=3):
     result = spider.saveItems()
     clawLog(spider.id_seq, result)
 
-    return dict(valid=spider.valid_items, invalid=spider.invalid_items)
+    return dict(t_zhixing_valid=spider.valid_items, t_zhixing_invalid=spider.invalid_items)
 # end
 
 

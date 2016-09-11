@@ -76,3 +76,4 @@ def test_insertDicts(row_num):
 
 if __name__ == '__main__':
     test_insertDicts(100000)
+

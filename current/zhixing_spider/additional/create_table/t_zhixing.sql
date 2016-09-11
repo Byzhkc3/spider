@@ -17,7 +17,7 @@ create table `t_zhixing_valid`(
 
 	unique key `unique_id` (`sys_id`)
 
-)engine = innodb default charset=utf8 auto_increment=1 comment='有效id的执行记录';
+)engine = innodb default charset=utf8 auto_increment=1 comment='执行-有效id的记录';
 
 
 
@@ -33,7 +33,7 @@ create table `t_zhixing_invalid`(
 
 	unique key `unique_id` (`sys_id`)
 
-)engine = innodb default charset=utf8 auto_increment=1 comment='无效id的执行记录';
+)engine = innodb default charset=utf8 auto_increment=1 comment='执行-无效id的记录';
 
 
 
