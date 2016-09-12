@@ -1,4 +1,4 @@
-use spider_temp;
+use spider;
 
 # 执行-有效id记录表
 drop table if exists `t_zhixing_valid`;

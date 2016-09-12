@@ -4,13 +4,10 @@ import json
 import time
 import random
 import sys
-
-from public.insert_dicts import insertDicts
-
-reload(sys)
 sys.path.append('../')
 from math import ceil
 from lxml import etree
+from public.insert_dicts import insertDicts
 from requests.utils import dict_from_cookiejar
 from public.share_func import basicRequest, \
     userAgent, getIp, recogImage, clawLog, makeDirs
@@ -258,10 +255,10 @@ class ZhiXingSpider(object):
         """
         valid_num  = len(self.valid_items)
         invalid_num = len(self.invalid_items)
-        valid_columns = valid_keys.values()
 
         # if valid_num:
         #     table_name = 't_zhixing_valid'
+        #     valid_columns = valid_keys.values()
         #     insertDicts(table_name, valid_columns, self.valid_items)
         # if invalid_num:
         #     table_name = 't_zhixing_invalid'
@@ -273,7 +270,7 @@ class ZhiXingSpider(object):
 # class
 
 
-def apiZhiXingSearch(name='', card_num='', thread_num=3):
+def apiZhiXingSearch(name='', card_num=''):
     """ 根据身份证号/企业号查询接口
     :param card_num:身份证号/企业号
     :return: dict(t_zhixing_valid=[], t_zhixing_invalid=[])
@@ -296,7 +293,10 @@ def apiZhiXingSearch(name='', card_num='', thread_num=3):
     result = spider.saveItems()
     clawLog(spider.id_seq, result)
 
-    return dict(t_zhixing_valid=spider.valid_items, t_zhixing_invalid=spider.invalid_items)
+    return dict(
+        t_zhixing_valid=spider.valid_items,
+        t_zhixing_invalid=spider.invalid_items
+    )
 # end
 
 
