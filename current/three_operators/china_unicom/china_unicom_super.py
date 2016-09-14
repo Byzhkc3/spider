@@ -11,8 +11,6 @@ import json
 import re
 from math import ceil
 
-import sys
-
 import gevent
 from threadpool import ThreadPool,makeRequests
 from requests.utils import dict_from_cookiejar
@@ -189,7 +187,6 @@ class PersonUnicom(object):
     # end
 
 
-
     def clawCallInfo(self):
 
         def clawMonthCall(month):
@@ -218,10 +215,7 @@ class PersonUnicom(object):
 
         def coroutineClawPageCall(date_tuple, page_no=1, resend = 2):  #完成单次请求[存在网络繁忙则重传]
             """完成单次请求"""
-            print '注意:协助准备处理{0}日到{1}日记录中的第{2}页'.format(date_tuple[0], date_tuple[1], page_no)
-
             params = { '_':'1468549625712', 'menuid':'000100030001'}
-            # form = {'pageNo':'1', 'pageSize':'100', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
             form = {'pageNo':'1', 'pageSize':'20', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
 
             form['pageNo'] = page_no
@@ -302,8 +296,42 @@ class PersonUnicom(object):
 
         print '结束:所有的通话记录数据的总页数为：{0}'.format(len(text_seq))
         print '统计:爬取通话记录耗费{0}秒'.format(time.time() - t_start)
-        return text_seq
+        return self.parseCallJson(text_seq)
+    # end
 
+
+    def parseCallJson(self, seq):
+
+        # cert_id, phone, call_area,   call_date, call_time, call_cost, call_long,   other_phone, call_type,   land_type
+        # certnum, phone,homeareaName,calldate,  calltime,  totalfee,  calllonghour,  other_num,  calltypeName,landtype
+
+        rows = list()
+        field_seq = ('homeareaName', 'calldate', 'calltime', 'totalfee',
+                    'calllonghour', 'othernum', 'calltypeName', 'landtype')
+        columns = ('call_area', 'call_date', 'call_time', 'call_cost',
+                   'call_long', 'other_phone', 'call_type', 'land_type')
+
+        for text in seq:
+            print text
+            try:
+                result = json.loads(text, encoding='utf-8')
+            except (KeyError,ValueError,Exception):
+                continue
+            if 'errorMessage' in result.keys(): # 没有数据
+                continue
+            else:
+                temp = dict()
+                temp['cert_id'],temp['phone'] = result['userInfo']['certnum'], result['userInfo']['usernumber']
+                results = result['pageMap']['result']   # results is a list which contains lots of dict
+                for i in results:
+                    item = dict()
+                    for index,key in enumerate(field_seq):
+                        item[columns[index]] = i[key]
+                    item.update(temp)
+                    rows.append(item)
+                # for
+        # for
+        return rows
     # end
 
     def logoutSys(self):
@@ -324,7 +352,6 @@ class PersonUnicom(object):
         :param password:
         :return:
         """
-
         phone_info = searchPhoneInfo(phone)
         if phone_info and phone_info['company'] == u'中国联通':
 
@@ -338,13 +365,14 @@ class PersonUnicom(object):
                 print u'时间:爬取用户信息耗费{0}秒'.format(time.time() - t_start)
 
                 call = self.clawCallInfo() # 爬取通话记录
-                return dict(t_china_unicom_uesr=[user], t_china_unicom_call=[call])
+                return dict(t_china_unicom_uesr=[user], t_china_unicom_call=call)
             else:
                 return login_result
         else:
-            return 'no phone info,phone number err'
+            print 'no phone info,phone number err'
     # end
 # class
+
 
 def chinaUnicomAPI(phone=None, password=None):  # API
     """
@@ -361,7 +389,8 @@ def chinaUnicomAPI(phone=None, password=None):  # API
         return check
 # end
 
-result = chinaUnicomAPI('13267175437','251314')
-for item in result.items():
-    print item
-# print apiChinaUnicom('18617112670', '662670')
+if __name__ == '__main__':
+    result = chinaUnicomAPI('13267175437','251314')
+    for item in result.items():
+        print item
+    # print apiChinaUnicom('18617112670', '662670')

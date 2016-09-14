@@ -35,6 +35,8 @@ def parseCallJson(seq):
     rows = list()
     field_seq = ('homeareaName', 'calldate', 'calltime', 'totalfee',
                 'calllonghour', 'othernum', 'calltypeName', 'landtype')
+    columns = ('call_area', 'call_date', 'call_time', 'call_cost',
+               'call_long', 'other_phone', 'call_type', 'land_type')
 
     for text in seq:
         try:
@@ -44,11 +46,15 @@ def parseCallJson(seq):
         if 'errorMessage' in result.keys(): # 没有数据
             continue
         else:
-            certId_and_phone = [result['userInfo']['certnum'], result['userInfo']['usernumber']]
+            temp = dict()
+            temp['cert_id'],temp['phone'] = result['userInfo']['certnum'], result['userInfo']['usernumber']
             results = result['pageMap']['result']   # results is a list which contains lots of dict
             for i in results:
-                row = certId_and_phone + [i[x] for x in field_seq]
-                rows.append(row)
+                item = dict()
+                for index,key in enumerate(field_seq):
+                    item[columns[index]] = i[key]
+                item.update(temp)
+                rows.append(item)
             # for
     # for
     return rows

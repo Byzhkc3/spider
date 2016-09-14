@@ -278,7 +278,6 @@ class GD_ChinaMobile(object):
         :param month: year+month, example:'201602'
         :return: False/response.text
         '''
-
         def getUniqueTag():
 
             form = {'month': '201602'}

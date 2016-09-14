@@ -315,7 +315,7 @@ def searchByCardNumAPI(name, card_num=''):
     log = spider.saveItems()
     clawLog(spider.id_seq, log)
 
-    return dict(valid=spider.valid_items, invalid=spider.invalid_items)
+    return dict(t_shixin_valid=spider.valid_items, t_shixin_invalid=spider.invalid_items)
 # end
 
 
@@ -333,8 +333,9 @@ if __name__ == '__main__':
     cost_seconds = time.time()-t_begin
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n'.format(cost_seconds)
 
-    for item in results['valid']:
-        print item
+    print results['t_shixin_valid'][0].keys()
+    # for item in results['valid']:
+    #     print item
 
 
 
