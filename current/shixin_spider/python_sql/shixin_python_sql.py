@@ -2,7 +2,7 @@
 import  MySQLdb
 
 
-def getDBConnection():
+def _getDBConnection():
     """ 建立连接并返回
     :return：DB Connection Object
     """
@@ -21,7 +21,7 @@ def queryRequestFailID(num):
     :param num: id数
     :return: IDList/[]
     """
-    conn =  getDBConnection()
+    conn =  _getDBConnection()
     cur = conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
 
     sql = 'select sys_id from t_shixin_invalid where err_type in (1,2) and flag=1 limit {0}'.format(num)
@@ -44,7 +44,7 @@ def updateIDstatus(id_seq):
     :param id_seq: list or tuple
     :return: True or False
     """
-    conn =  getDBConnection()
+    conn =  _getDBConnection()
     cur = conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
 
     if not isinstance(id_seq, (tuple,list)):
@@ -64,7 +64,7 @@ def queryErrUnknownID(num):
     :param num: id数
     :return: IDList/[]
     """
-    conn =  getDBConnection()
+    conn =  _getDBConnection()
     cur = conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
 
     sql = 'select sys_id from t_shixin_invalid where err_type=3 and flag=1 limit {0}'.format(num)
@@ -82,7 +82,7 @@ def deleteErrItems(id_seq):
     :param id_seq: list/tuple
     :return: None
     """
-    conn =  getDBConnection()
+    conn =  _getDBConnection()
     cur = conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
 
     sql = 'delete from t_shixin_invalid  where sys_id in {0}'.format(str(tuple(id_seq)))
@@ -99,7 +99,7 @@ def queryLostID(start_id, end_id):
     :return: list/[]
     """
     sys_ids = list()
-    conn = getDBConnection()
+    conn = _getDBConnection()
     cur = conn.cursor(cursorclass = MySQLdb.cursors.DictCursor)
 
     tables = ('t_shixin_valid', 't_shixin_invalid')

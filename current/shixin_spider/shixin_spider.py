@@ -25,15 +25,14 @@ import gevent
 from gevent import monkey; monkey.patch_all()
 from requests.utils import dict_from_cookiejar
 
+import public.db_config as DB
+import configuration.columns as config
 from public.share_func import *
 from python_sql.shixin_python_sql import *
-from configuration.columns_cfg import *
-from public.insert_dicts import insertDictList
 
 
 class ShiXinSpider(object):
     """失信被执行人信息"""
-
     def __init__(self):
         self.headers = {
             'Referer': '',
@@ -174,8 +173,8 @@ class ShiXinSpider(object):
             else:
                 result = dict()
                 for k, v in item.items():
-                    if k in KEY_COLUMN.keys():
-                        key = KEY_COLUMN[k]
+                    if k in config.KEY_COLUMN.keys():
+                        key = config.KEY_COLUMN[k]
                         result[key] = v
                 result['flag']  = 1 if 'businessEntity' in item.keys() else 0
                 self.valid_items.append(result)
@@ -225,9 +224,9 @@ class ShiXinSpider(object):
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            insertDictList('t_shixin_valid', COLUMN_VALID, self.valid_items)
+            DB.insertDictList('t_shixin_valid', config.COLUMN_VALID, self.valid_items)
         if invalid_num:
-            insertDictList('t_shixin_invalid', COLUMN_INVALID, self.invalid_items)
+            DB.insertDictList('t_shixin_invalid', config.COLUMN_INVALID, self.invalid_items)
 
         return u'完成入库: 有效记录数{0}，错误记录数{1}'.format(valid_num, invalid_num)
     # end
@@ -241,7 +240,7 @@ class ShiXinSpider(object):
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            insertDictList('t_shixin_valid', COLUMN_VALID, self.valid_items)
+            DB.insertDictList('t_shixin_valid', config.COLUMN_VALID, self.valid_items)
             deleteErrItems([item['sys_id'] for item in self.valid_items])
         if invalid_num:
             updateIDstatus([item['sys_id'] for item in self.invalid_items if item['err_type'] == 3])
