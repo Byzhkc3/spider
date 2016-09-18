@@ -13,8 +13,8 @@ from math import ceil
 from lxml import etree
 from requests.utils import dict_from_cookiejar
 
+import public.db_config as DB
 import configuration.columns as config
-from myql_middleware.insert_dicts import insertDicts
 from public.share_func import userAgent, \
     basicRequest, getIp, recogImage, makeDirs, clawLog
 
@@ -252,18 +252,18 @@ class ShiXinSpider(object):
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            insertDicts(config.TABEL_NAME_1, config.COLUMN_VALID, self.valid_items)
+            DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_VALID, self.valid_items)
         if invalid_num:
-            insertDicts(config.TABLE_NAME_2, config.COLUMN_INVALID, self.invalid_items)
+            DB.insertDictList(config.TABLE_NAME_2, config.COLUMN_INVALID, self.invalid_items)
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end
 
 
 def shixinSearchAPI(name, card_num=''):
-    """ 查询接口,
-    :param name: 名称[必须]
-    :card_num: 证件号[]
+    """ 查询接口,名称必须,证件号可缺省
+    :param name: 名称
+    :card_num: 证件号
     :return: dict(t_shixin_valid=[], t_shixin_invalid=[]) / {}
     """
     makeDirs()
@@ -306,8 +306,12 @@ if __name__ == '__main__':
     t_begin = time.time()
     print time.ctime() + ':\t' + 'Test start, running'
 
-    card_num = '72217220X'
-    name = '遵义侨丰房地产开发有限责任公司'
+    # card_num = '72217220X'
+    # name = '遵义侨丰房地产开发有限责任公司'
+
+    card_num = ''
+    name = '曹俊元'
+
     results = shixinSearchAPI(name, card_num)
 
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n\n'.format(time.time()-t_begin)

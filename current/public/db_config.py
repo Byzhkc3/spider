@@ -3,7 +3,7 @@ import MySQLdb
 import _mysql_exceptions
 
 
-def getDBConnection():
+def _getDBConnection():
     return MySQLdb.connect(
         host='localhost',
         user='root',
@@ -40,7 +40,7 @@ def insertDictList(table_name, column_names, items):
           format(table_name=table_name, columms=','.join(column_names)) \
           +' values ({symbol})'.format(symbol=symbol)
 
-    conn = getDBConnection()
+    conn = _getDBConnection()
     cur = conn.cursor()
     try:
         cur.executemany(sql, rows)
@@ -61,7 +61,7 @@ def insertDictList(table_name, column_names, items):
 # end
 
 
-def insertDicts_Test(row_num):
+def _insertDicts_Test(row_num):
     """ 测试批量插入数据
     :param row_num: 行数（记录数）
     :return: None
@@ -77,5 +77,5 @@ def insertDicts_Test(row_num):
 
 
 if __name__ == '__main__':
-    insertDicts_Test(10000)
+    _insertDicts_Test(10000)
 
