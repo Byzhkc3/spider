@@ -28,7 +28,7 @@ from requests.utils import dict_from_cookiejar
 import public.db_config as DB
 import configuration.columns as config
 from public.share_func import *
-from python_sql.shixin_python_sql import *
+from necessary.shixin_python_sql import *
 
 
 class ShiXinSpider(object):

@@ -4,8 +4,7 @@
 TABEL_NAME_1 = 't_shixin_valid'
 TABLE_NAME_2 = 't_shixin_invalid'
 
-# key对应也请求返回内容的key
-# value对应存储表的字段名
+# 字典key对应也请求返回内容的key,value对应存储表的字段名
 KEY_COLUMN = {
     'id': 'sys_id',
     'iname': 'name',
