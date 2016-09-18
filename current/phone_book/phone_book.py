@@ -21,8 +21,7 @@ from copy import deepcopy
 from gevent import monkey; monkey.patch_all()
 from _mysql_exceptions import MySQLError
 
-from configuration.root_node import root_detail_names, root_short_names, root_city, root_province
-
+import configuration.root_node as config
 
 
 _time_out = 6
@@ -81,7 +80,7 @@ class PhoneBook(object):
         content = etree.tounicode(selector.xpath('//body/div[6]')[0])
         href_and_name = re.findall('href="(/\d.*?)">(.*?)<', content)
         # 仅提取省,并将用详细省名代替简写省名
-        seq =  [[i[0], root_detail_names[root_short_names.index(i[1])]] for i in href_and_name if i[1] in root_short_names]
+        seq =  [[i[0], config.ROOT_DETAIL_NAMES[config.ROOT_SHORT_NAMES.index(i[1])]] for i in href_and_name if i[1] in config.ROOT_SHORT_NAMES]
         self.hrefs.extend([index[0] for index in seq])
         return seq
     # end
@@ -110,7 +109,7 @@ class PhoneBook(object):
             for i in repeat_hrefs:
                 hrefs.remove(i)
 
-        if name[-1] in root_province:
+        if name[-1] in config.ROOT_PROVINCE:
             province_detail_name = name[-1]
             city_names = self.getCityFromDB(province_detail_name)
             result = list()
@@ -159,7 +158,7 @@ class PhoneBook(object):
                     item = dict()
                     #　区分直辖市和省，直辖市要填充省名
                     temp = deepcopy(name)
-                    if temp[0] in root_city:
+                    if temp[0] in config.ROOT_CITY:
                         temp.insert(0, temp[0])
                     try:
                         for i, v in enumerate(temp):
@@ -268,7 +267,7 @@ class PhoneBook(object):
     def checkSearchCity(self):
         """ 检查各省能否正确找到旗下对应的市
         :return: None """
-        for i,v in enumerate(root_detail_names):
+        for i,v in enumerate(config.ROOT_DETAIL_NAMES):
             city_names = self.getCityFromDB(v)
             print 'no.{0}, province name.{1}, demo city.{2}'.format(i+1,v,city_names[0])
 

@@ -1,13 +1,12 @@
 #coding=utf-8
 
-"""
-valid_keys 表示 json keys 映射到 t_shixin_valid 相应的columns
+# 表名
+TABEL_NAME_1 = 't_shixin_valid'
+TABLE_NAME_2 = 't_shixin_invalid'
 
-valid_columns 对应 t_shixin_valid 的columns
-invalid_columns 对应 t_shixin_invalid 的columns
-"""
-
-valid_keys = {
+# key对应也请求返回内容的key
+# value对应存储表的字段名
+KEY_COLUMN = {
     'id': 'sys_id',
     'iname': 'name',
     'age': 'age',
@@ -27,9 +26,11 @@ valid_keys = {
     'partyTypeName': 'party_type_name'
 }
 
-valid_columns = valid_keys.values()
-valid_columns.append('flag')
+# COLUMN_VALID为表t_shixin_valid对应的字段名
+COLUMN_VALID = KEY_COLUMN.values()
+COLUMN_VALID.append('flag')
 
-invalid_columns = ('sys_id', 'err_type')
+# COLUMN_INVALID为表t_shixin_invalid对应的字段名
+COLUMN_INVALID = ('sys_id', 'err_type')
 
 

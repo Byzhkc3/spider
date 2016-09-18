@@ -1,6 +1,6 @@
-use spider_temp;
+use spider;
 
-# 失信-有效id记录表
+# 失信被执行人-有效id记录表
 drop table if exists `t_shixin_valid`;
 create table `t_shixin_valid` (
 
@@ -14,7 +14,6 @@ create table `t_shixin_valid` (
   `card_num` varchar(64) not null comment '身份证号/公司编号',
   `business_entity` varchar(64) default null comment '公司法人',
 
-
   `area_name` varchar(64) not null comment '地区',
   `case_code` varchar(128) not null comment '案号',
   `reg_date` varchar(128) not null comment '立案时间',
@@ -27,27 +26,15 @@ create table `t_shixin_valid` (
   `disrupt_type_name` varchar(128) default null comment '失信被执行人行为具体情形',
 
   `party_type_name` varchar(128)  default null comment '含义未知字段',
-
   `flag` tinyint not null comment '0代表个人, 1代表公司',
-   unique key `unique_id`(`sys_id`)
 
-) engine=innodb default charset=utf8 auto_increment=1000 comment='失信-有效id表';
+  key `search`(`name`, `card_num`, `flag`),
+  unique key `unique_id`(`sys_id`)
 
-#从之前的t_shixin_company导入数据
-# 导入爬取得的-公司数据
-insert into t_shixin_valid(sys_id, name, card_num, business_entity, area_name, case_code, reg_date, 
-  publish_date, gist_id, court_name, gist_unit, duty, performance, disrupt_type_name, party_type_name, flag)
-select sys_id, name, card_num, business_entity, area_name, case_code, reg_date, 
-  publish_date, gist_id, court_name, gist_unit, duty, performance, disrupt_type_name, party_type_name, 1 from t_shixin_company;
-
-# 导入爬取得的-个人数据
-insert into t_shixin_valid(sys_id, name, age, sex, card_num, area_name, case_code, reg_date, 
-  publish_date, gist_id, court_name, gist_unit, duty, performance, disrupt_type_name, party_type_name, flag)
-select sys_id, name, age, sex, card_num, area_name, case_code, reg_date, 
-  publish_date, gist_id, court_name, gist_unit, duty, performance, disrupt_type_name, party_type_name, 0 from t_shixin_person;
+) engine=innodb default charset=utf8 auto_increment=1000 comment='失信被执行人-有效id表';
 
 
-# 失信-无效id记录表
+# 失信被执行人-无效id记录表
 drop table if exists `t_shixin_invalid`;
 create table `t_shixin_invalid`(
   `id` int unsigned primary key auto_increment comment 'id', 
@@ -57,6 +44,7 @@ create table `t_shixin_invalid`(
   `err_type` tinyint not null comment '1表示请求失败,2表示超时,3表示未知错误',
   `flag` tinyint default 1 comment '1表示未处理,0表示已处理',
 
+  key `search`(`err_type`, `flag`),
   unique key `unique_id` (`sys_id`)
 
-)engine = innodb default charset=utf8 auto_increment=1 comment='失信-无效id表';
+)engine = innodb default charset=utf8 auto_increment=1 comment='失信被执行人-无效id表';

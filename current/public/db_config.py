@@ -11,14 +11,15 @@ def getDBConnection():
         db='spider',
         charset='utf8'
     )
+# end
 
-
-def insertDicts(table_name, column_names, items):
+def insertDictList(table_name, column_names, items):
     """ 实现插入字典列表
     :param table_name: 表名
     :param column_names: 列名(不包括自增的列)
     :param items: 字典列表
-    :return:None """
+    :return:None
+    """
     if not isinstance(items, (list, tuple)):
         raise ValueError
 
@@ -60,20 +61,21 @@ def insertDicts(table_name, column_names, items):
 # end
 
 
-def test_insertDicts(row_num):
+def insertDicts_Test(row_num):
     """ 测试批量插入数据
     :param row_num: 行数（记录数）
-    :return: None """
+    :return: None
+    """
     import time
     table_name = 't_test'
     column_names = ('stu_id', 'stu_name', 'stu_phone', 'stu_address', 'stu_remark')
     items = [dict(stu_id=i, stu_name='name'.format(i)) for i in range(row_num)]
 
     t_begin = time.time()
-    insertDicts(table_name, column_names, items)
+    insertDictList(table_name, column_names, items)
     print '结束：插入{row_num}条记录花费时间{time}'.format(row_num=row_num, time=time.time()-t_begin)
 
 
 if __name__ == '__main__':
-    test_insertDicts(100000)
+    insertDicts_Test(10000)
 

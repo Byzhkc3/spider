@@ -7,7 +7,7 @@ import sys
 sys.path.append('../')
 from math import ceil
 from lxml import etree
-from public.insert_dicts import insertDicts
+import public.db_config as DB
 from requests.utils import dict_from_cookiejar
 from public.share_func import basicRequest, \
     userAgent, getIp, recogImage, clawLog, makeDirs
@@ -256,13 +256,13 @@ class ZhiXingSpider(object):
         valid_num  = len(self.valid_items)
         invalid_num = len(self.invalid_items)
 
-        # if valid_num:
-        #     table_name = 't_zhixing_valid'
-        #     valid_columns = valid_keys.values()
-        #     insertDicts(table_name, valid_columns, self.valid_items)
-        # if invalid_num:
-        #     table_name = 't_zhixing_invalid'
-        #     insertDicts(table_name, invalid_columns, self.invalid_items)
+        if valid_num:
+            table_name = 't_zhixing_valid'
+            valid_columns = valid_keys.values()
+            DB.insertDictList(table_name, valid_columns, self.valid_items)
+        if invalid_num:
+            table_name = 't_zhixing_invalid'
+            DB.insertDictList(table_name, invalid_columns, self.invalid_items)
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end saveItems

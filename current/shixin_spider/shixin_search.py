@@ -2,10 +2,9 @@
 
 """
 Author: moyh
-Date: 2016/9/7
-alter: 变更为流程,用时double
+Date:   2016/9/7
+alter:  变更为流程[没有线程/协程]
 """
-
 import re
 import json
 import time
@@ -14,13 +13,14 @@ from math import ceil
 from lxml import etree
 from requests.utils import dict_from_cookiejar
 
-from configuration.columns_cfg import valid_keys
-from public.share_func import userAgent, basicRequest, getIp, recogImage, makeDirs, clawLog
+import configuration.columns as config
+from myql_middleware.insert_dicts import insertDicts
+from public.share_func import userAgent, \
+    basicRequest, getIp, recogImage, makeDirs, clawLog
 
 
 class ShiXinSpider(object):
     """失信人记录spider"""
-
     def __init__(self):
         self.headers = {
             'Referer': '',
@@ -43,9 +43,10 @@ class ShiXinSpider(object):
     # end
 
 
-    def updateCookies(self):
+    def getCookies(self):
         """ 获取cookies
-        :return: dict obj/False """
+        :return: dict obj/False
+        """
         def visitSys():
             url = 'http://shixin.court.gov.cn/'
             options = {'method': 'get', 'url':url, 'headers': self.headers}
@@ -118,15 +119,16 @@ class ShiXinSpider(object):
 
     def searchByCardNumAndName(self, pw_code, name, card_num, re_num=2):
         """ 通过身份证号/公司号查记录,提取当前页的所有id
-        :return: int  """
+        :return: int
+        """
         self.name = name
         self.card_num = card_num
 
         form = {
-            'pProvince':'0',
-            'pCode':'2218',
-            'pCardNum':'70289247-X',
-            'pName':'大庆万宝物资储运有限公司'
+            'pProvince': '0',
+            'pCode': '2218',
+            'pCardNum': '70289247-X',
+            'pName': '大庆万宝物资储运有限公司'
         }
         form['pName'] = name
         form['pCode'] = pw_code
@@ -159,7 +161,8 @@ class ShiXinSpider(object):
 
     def findIDs(self, selector):
         """ :param selector:
-        :return: list """
+        :return: list
+        """
         trs = selector.xpath('//table[@id="Resultlist"]/tbody/tr')[1:]
         return [tr.xpath('td[5]/a/@id')[0] for tr in trs]
     # end findIDs
@@ -168,7 +171,8 @@ class ShiXinSpider(object):
         """ 转换page,提取当前页的所有id
         :param pw_code: 验证码
         :param page_i: 第i页
-        :return:None """
+        :return:None
+        """
         form = {
             'pProvince':'0',
             'pCode':'2218',
@@ -196,15 +200,18 @@ class ShiXinSpider(object):
     def saveErrID(self, sys_id, err_type):
         """:param sys_id: 单个id或者list,tuple
         :param err_type:
-        :return:None  """
+        :return:None
+        """
         if err_type not in (1, 2, 3):
             raise ValueError(u'错误类型范围不在定义范围')
 
         if isinstance(sys_id, (list, tuple)):
             for i in sys_id:
-                self.invalid_items.append(dict(sys_id = i, err_type = err_type))
+                error = dict(sys_id = i, err_type = err_type)
+                self.invalid_items.append(error)
         else:
-            self.invalid_items.append(dict(sys_id = sys_id, err_type = err_type))
+            error = dict(sys_id = sys_id, err_type = err_type)
+            self.invalid_items.append(error)
     # end
 
     def getJson(self, sys_id, pw_code, re_num=2):
@@ -227,8 +234,8 @@ class ShiXinSpider(object):
             else:
                 result = dict()
                 for k, v in item.items():
-                    if k in valid_keys.keys():
-                        key = valid_keys[k]
+                    if k in config.KEY_COLUMN.keys():
+                        key = config.KEY_COLUMN[k]
                         result[key] = v
                 result['flag']  = 1 if 'businessEntity' in item.keys() else 0
                 self.valid_items.append(result)
@@ -241,26 +248,22 @@ class ShiXinSpider(object):
         """  保存数据到mysql
         :return: None
         """
-        valid_columns = valid_keys.values()
-        valid_columns.append('flag')
-
         valid_num  = len(self.valid_items)
         invalid_num = len(self.invalid_items)
 
-        # if valid_num:
-        #     table_name = 't_shixin_valid'
-        #     insertDicts(table_name, valid_columns, self.valid_items)
-        # if invalid_num:
-        #     table_name = 't_shixin_invalid'
-        #     insertDicts(table_name, invalid_columns, self.invalid_items)
+        if valid_num:
+            insertDicts(config.TABEL_NAME_1, config.COLUMN_VALID, self.valid_items)
+        if invalid_num:
+            insertDicts(config.TABLE_NAME_2, config.COLUMN_INVALID, self.invalid_items)
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end
 
 
-def apiShiXinSearch(name, card_num=''):
-    """ 查询接口
-    :param name: 姓名/公司名
+def shixinSearchAPI(name, card_num=''):
+    """ 查询接口,
+    :param name: 名称[必须]
+    :card_num: 证件号[]
     :return: dict(t_shixin_valid=[], t_shixin_invalid=[]) / {}
     """
     makeDirs()
@@ -268,7 +271,7 @@ def apiShiXinSearch(name, card_num=''):
         raise ValueError
 
     spider = ShiXinSpider()
-    cookie = spider.updateCookies()
+    cookie = spider.getCookies()
     if not cookie:
         return {}
 
@@ -291,29 +294,25 @@ def apiShiXinSearch(name, card_num=''):
     log = spider.saveItems()
     clawLog(spider.id_seq, log)
 
-    return dict(t_shixin_valid=spider.valid_items, t_shixin_invalid=spider.invalid_items)
+    return dict(
+        t_shixin_valid=spider.valid_items,
+        t_shixin_invalid=spider.invalid_items
+    )
 # end
 
 
 if __name__ == '__main__':
-    # 测试demo
-
-    print time.ctime() + ':\t' + 'Test start'
-
+    # demo
     t_begin = time.time()
+    print time.ctime() + ':\t' + 'Test start, running'
+
     card_num = '72217220X'
     name = '遵义侨丰房地产开发有限责任公司'
-    results = apiShiXinSearch(name, card_num)
+    results = shixinSearchAPI(name, card_num)
 
-    cost_seconds = time.time()-t_begin
-    print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n\n'.format(cost_seconds)
-
+    print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n\n'.format(time.time()-t_begin)
     print results
-    # valid = results['t_shixin_valid']
-    # if valid:
-    #     print u'爬取的有效记录数总数为：{0}'.format(len(results))
-    #     for k,v in valid[0].iteritems():
-    #         print u'key is: {0} ===> value is: {1}'.format(k, v)
+
 
 
 

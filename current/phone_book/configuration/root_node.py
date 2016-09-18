@@ -1,7 +1,7 @@
 #coding=utf-8
 
 # '台湾' '香港特别行政区' '澳门特别行政区'
-_root_node = {
+_ROOT_NODE = {
     '北京市': '北京',
     '天津市': '天津',
     '上海市': '上海',
@@ -37,12 +37,12 @@ _root_node = {
     '新疆维吾尔自治区': '新疆'
 }
 
-root_detail_names = _root_node.keys()
-root_short_names = _root_node.values()
-root_city  = ('北京市', '天津市', '上海市', '重庆市')
-root_province = tuple(set(root_detail_names) - set(root_city))
+ROOT_DETAIL_NAMES = _ROOT_NODE.keys()
+ROOT_SHORT_NAMES = _ROOT_NODE.values()
+ROOT_CITY  = ('北京市', '天津市', '上海市', '重庆市')
+ROOT_PROVINCE = tuple(set(ROOT_DETAIL_NAMES) - set(ROOT_CITY))
 
 if __name__ == '__main__':
-    print len(root_short_names) #31
+    print len(ROOT_SHORT_NAMES) #31
     # for i,v in enumerate(root_province):
     #     print i+1, v

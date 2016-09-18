@@ -25,7 +25,7 @@ from requests.utils import dict_from_cookiejar
 from public.share_func import *
 from python_sql.shixin_python_sql import *
 from configuration.columns_cfg import *
-from public.insert_dicts import insertDicts
+from public.insert_dicts import insertDictList
 
 
 class ShiXinSpider(object):
@@ -171,8 +171,8 @@ class ShiXinSpider(object):
             else:
                 result = dict()
                 for k, v in item.items():
-                    if k in valid_keys.keys():
-                        key = valid_keys[k]
+                    if k in KEY_COLUMN.keys():
+                        key = KEY_COLUMN[k]
                         result[key] = v
                 result['flag']  = 1 if 'businessEntity' in item.keys() else 0
                 self.valid_items.append(result)
@@ -222,9 +222,9 @@ class ShiXinSpider(object):
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            insertDicts('t_shixin_valid', valid_columns, self.valid_items)
+            insertDictList('t_shixin_valid', COLUMN_VALID, self.valid_items)
         if invalid_num:
-            insertDicts('t_shixin_invalid', invalid_columns, self.invalid_items)
+            insertDictList('t_shixin_invalid', COLUMN_INVALID, self.invalid_items)
 
         return u'完成入库: 有效记录数{0}，错误记录数{1}'.format(valid_num, invalid_num)
     # end
@@ -238,7 +238,7 @@ class ShiXinSpider(object):
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            insertDicts('t_shixin_valid', valid_columns, self.valid_items)
+            insertDictList('t_shixin_valid', COLUMN_VALID, self.valid_items)
             deleteErrItems([item['sys_id'] for item in self.valid_items])
         if invalid_num:
             updateIDstatus([item['sys_id'] for item in self.invalid_items if item['err_type'] == 3])
