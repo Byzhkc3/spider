@@ -1,25 +1,25 @@
 #coding=utf-8
 import re
+import sys
 import json
 import time
 import random
-import sys
-sys.path.append('../')
 from math import ceil
+sys.path.append('../')
+
 from lxml import etree
 import public.db_config as DB
+import configuration.columns as config
 from requests.utils import dict_from_cookiejar
 from public.share_func import basicRequest, \
     userAgent, getIp, recogImage, clawLog, makeDirs
-from configuration.columns_cfg import valid_keys, invalid_columns
+
 
 _timeout = 5
 
 class ZhiXingSpider(object):
     """根据身份证号/企业号查询执行信息,流程版"""
-
     def __init__(self):
-
         self.headers = {
             'Referer': '',
             'User-Agent': userAgent(),
@@ -95,7 +95,8 @@ class ZhiXingSpider(object):
 
     def searchByCardNum(self, name, card_num, re_num=2):
         """ 通过身份证号/公司号查记录
-        :return: 页总数 """
+        :return: 页总数
+        """
         self.card_num = card_num
         self.name = name
         pw_code = self.getCode()
@@ -240,8 +241,8 @@ class ZhiXingSpider(object):
             else:
                 result = dict()
                 for k, v in item.items():
-                    if k in valid_keys.keys():
-                        key = valid_keys[k]
+                    if k in config.KEY_COLUMN.keys():
+                        key = config.KEY_COLUMN[k]
                         result[key] = v
                 self.valid_items.append(result)
         else:
@@ -250,19 +251,16 @@ class ZhiXingSpider(object):
     # end
 
     def saveItems(self):
-        """  保存数据到mysql
+        """ 保存数据到mysql
         :return: None
         """
         valid_num  = len(self.valid_items)
         invalid_num = len(self.invalid_items)
 
         if valid_num:
-            table_name = 't_zhixing_valid'
-            valid_columns = valid_keys.values()
-            DB.insertDictList(table_name, valid_columns, self.valid_items)
+            DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_VALID, self.valid_items)
         if invalid_num:
-            table_name = 't_zhixing_invalid'
-            DB.insertDictList(table_name, invalid_columns, self.invalid_items)
+            DB.insertDictList(config.TABLE_NAME_2, config.COLUMN_INVALID, self.invalid_items)
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end saveItems
@@ -270,7 +268,7 @@ class ZhiXingSpider(object):
 # class
 
 
-def apiZhiXingSearch(name='', card_num=''):
+def zhixingSearchAPI(name='', card_num=''):
     """ 根据身份证号/企业号查询接口
     :param card_num:身份证号/企业号
     :return: dict(t_zhixing_valid=[], t_zhixing_invalid=[])
@@ -302,15 +300,14 @@ def apiZhiXingSearch(name='', card_num=''):
 
 if __name__ == '__main__':
     # demo
+    t_begin = time.time()
     print time.ctime() + ':\t' + 'Test start'
 
-    t_begin = time.time()
     card_num = '68087331-4'
     name = '漳州千禧餐饮有限公司'
-    results = apiZhiXingSearch(name, card_num)
+    results = zhixingSearchAPI(name, card_num)
 
-    cost_seconds = time.time()-t_begin
-    print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n'.format(cost_seconds)
+    print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n'.format(time.time()-t_begin)
 
     print results
 
