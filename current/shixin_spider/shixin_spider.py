@@ -398,7 +398,7 @@ def errUnknownAPI(num):
 # end
 
 
-def errLostIDs():
+def errLostAPI():
     """ 根据已经遍历的id求出有哪些id是丢失的，并进行请求
     :return: None
     :有效id: 1741386
