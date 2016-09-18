@@ -4,11 +4,11 @@ use spider;
 drop table if exists `t_zhixing_valid`;
 create table `t_zhixing_valid`(
 	`id` int unsigned primary key auto_increment comment 'id', 
-  `alter_time` timestamp default current_timestamp on update current_timestamp,
+ 	`alter_time` timestamp default current_timestamp on update current_timestamp,
 
-  `sys_id` int unsigned not null comment '查询id',
-  `name` varchar(128) not null comment '个人姓名/公司名',
-  `card_num` varchar(64) not null comment '身份证号/公司编号',
+	`sys_id` int unsigned not null comment '查询id',
+	`name` varchar(128) not null comment '个人姓名/公司名',
+	`card_num` varchar(64) not null comment '身份证号/公司编号',
 
 	`case_code` varchar(128) not null comment '案号',       			
 	`reg_date`  varchar(128) not null comment '立案时间',   			
@@ -25,7 +25,7 @@ create table `t_zhixing_valid`(
 drop table if exists `t_zhixing_invalid`;
 create table `t_zhixing_invalid`(
 	`id` int unsigned primary key auto_increment comment 'id', 
-  `alter_time` timestamp default current_timestamp on update current_timestamp,
+	`alter_time` timestamp default current_timestamp on update current_timestamp,
 
 	`sys_id` int unsigned not null comment '查询id',
 	`err_type` tinyint not null comment '1表示请求失败,2表示超时,3表示未知错误',
