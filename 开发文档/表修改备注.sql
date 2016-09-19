@@ -7,4 +7,4 @@ alter table t_shixin_invalid drop index re_err;
 alter table t_shixin_invalid add index `search`(`err_type`, `flag`);
 
 # 备注
-对于执行人信息看下能否通过'公司'进行分类
+# 目前无法对被执行人数据进行分类[公司/个人]
