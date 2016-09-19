@@ -1,8 +1,8 @@
 #coding=utf-8
-
 import datetime,calendar
 
-def getStrMonth(month): # 将月份转为两位的字符串
+
+def _getStrMonth(month): # 将月份转为两位的字符串
 
     month = str(month)
     month = month if len(month) == 2 else '0'+month
@@ -10,13 +10,13 @@ def getStrMonth(month): # 将月份转为两位的字符串
 # end
 
 
-def getStrMonthDayNum(year,month):  # 获得某年某月对应的天数
+def _getStrMonthDayNum(year,month):  # 获得某年某月对应的天数
 
     return str(calendar.monthrange(year,month)[1])
 # end
 
 
-def getDateSuq():   # 获得近6个月的时间
+def getDateSeq():   # 获得近6个月的时间
 
     seq = list()
     today = datetime.date.today()
@@ -26,14 +26,14 @@ def getDateSuq():   # 获得近6个月的时间
     for i in range(6):
         if month-1 > 0:
             month -= 1
-            year_month = str(year) + '-' + getStrMonth(month)
+            year_month = str(year) + '-' + _getStrMonth(month)
         else:
             year -= 1
             month = 12
-            year_month = str(year) + '-' + getStrMonth(month)
+            year_month = str(year) + '-' + _getStrMonth(month)
 
         beginDate = year_month + '-' + '01'
-        endDate = year_month + '-' + getStrMonthDayNum(year,month)
+        endDate = year_month + '-' + _getStrMonthDayNum(year,month)
 
         seq.append([beginDate,endDate])
 
@@ -43,4 +43,4 @@ def getDateSuq():   # 获得近6个月的时间
 # end
 
 if __name__ == '__main__':
-    print getDateSuq()
+    print getDateSeq()

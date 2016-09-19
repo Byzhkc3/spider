@@ -15,7 +15,7 @@ user_keys = {
     'balance': 'balance'
 }
 
-
+# usercirclestatus=有效期
 call_keys={
 
 }

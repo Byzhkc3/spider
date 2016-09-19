@@ -4,28 +4,24 @@
 联通通话记录爬取
 时间：2016/9/9
 版本：协程版
+++++++++++++++++Over+++++++++++++++++
 """
-
 import json
 import re
 import time
 from math import ceil
 
 import gevent
-from gevent import monkey;
+from gevent import monkey; monkey.patch_all()
 from requests.utils import dict_from_cookiejar
-from threadpool import ThreadPool,makeRequests
+from threadpool import ThreadPool, makeRequests
 
-monkey.patch_all()
-from three_operators.china_unicom.necessary.unicom_date import getDateSuq
-
+from necessary.param_date import getDateSeq
+from configuration.columns import user_keys
 from public.share_func import userAgent, basicRequest, getTimestamp
-from three_operators.share_package.share_package import checkParamFormat, searchPhoneInfo
-from configuration.columns_cfg import user_keys
 
 class PersonUnicom(object):
-    '''中国联通爬虫'''
-
+    """中国联通爬虫"""
     def __init__(self):
         self.headers = {
             'Accept': '*/*',
@@ -254,7 +250,6 @@ class PersonUnicom(object):
             params = { '_':'1468549625712', 'menuid':'000100030001'}
             # form = {'pageNo':'1', 'pageSize':'100', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
             form = {'pageNo':'1', 'pageSize':'20', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
-
             form['pageNo'] = page_no
             form['beginDate'] = date_tuple[0]
             form['endDate'] = date_tuple[1]
@@ -288,7 +283,7 @@ class PersonUnicom(object):
         print '测试:多线程开始爬取6个月数据'
         t_start = time.time()
         text_seq = list()
-        date_seq = getDateSuq()
+        date_seq = getDateSeq()
 
         pool = ThreadPool(3)
         requests = makeRequests(clawMonthCall, date_seq)
@@ -300,12 +295,9 @@ class PersonUnicom(object):
         return self.parseCallJson(text_seq)
     # end
 
-
     def parseCallJson(self, seq):
-
         # cert_id, phone, call_area,   call_date, call_time, call_cost, call_long,   other_phone, call_type,   land_type
         # certnum, phone,homeareaName,calldate,  calltime,  totalfee,  calllonghour,  other_num,  calltypeName,landtype
-
         rows = list()
         field_seq = ('homeareaName', 'calldate', 'calltime', 'totalfee',
                     'calllonghour', 'othernum', 'calltypeName', 'landtype')
@@ -336,7 +328,7 @@ class PersonUnicom(object):
     # end
 
     def logoutSys(self):
-        """logout without check"""
+        """ logout without check """
         url = 'http://iservice.10010.com/e3/static/common/logout?_=' + getTimestamp()
         options = {'method':'post', 'url':url, 'cookies':None, 'headers':self.headers}
 
@@ -347,51 +339,56 @@ class PersonUnicom(object):
             pass
     # end
 
-    def startSpider(self, phone, password):
-        """
-        :param phone:
-        :param password:
+    def startSpider(self, phone_attr):
+        """ 触发爬虫
+        :param phone: 手机号码
+        :param password: 服务密码
         :return:
         """
-        phone_info = searchPhoneInfo(phone)
-        if phone_info and phone_info['company'] == u'中国联通':
+        t_start = time.time()
+        login_result = self.loginSys(phone_attr['phone'], phone_attr['password'])
+        print u'时间:登录耗费{0}秒'.format(time.time() - t_start)
 
+        if login_result['result'] == 2000:
             t_start = time.time()
-            login_result = self.loginSys(phone, password)
-            print u'时间:登录耗费{0}秒'.format(time.time() - t_start)
+            user = self.clawUserInfo(phone_attr) # 爬取用户信息
+            print u'时间:爬取用户信息耗费{0}秒'.format(time.time() - t_start)
 
-            if login_result['result'] == 2000:
-                t_start = time.time()
-                user = self.clawUserInfo(phone_info) # 爬取用户信息
-                print u'时间:爬取用户信息耗费{0}秒'.format(time.time() - t_start)
-
-                call = self.clawCallInfo() # 爬取通话记录
-                return dict(t_china_unicom_uesr=[user], t_china_unicom_call=call)
-            else:
-                return login_result
+            call = self.clawCallInfo() # 爬取通话记录
+            return dict(t_china_unicom_uesr=[user], t_china_unicom_call=call)
         else:
-            print 'no phone info,phone number err'
+            return login_result
     # end
+
+    @staticmethod
+    def checkAttr(phone_attr):
+        if not isinstance(phone_attr, dict):
+            raise ValueError
+
 # class
 
 
-def chinaUnicomAPI(phone=None, password=None):  # API
+def chinaUnicomAPI(phone_attr):
     """
-    :param phone: 全为数字的字符串
+    :param phone_attr: dict(phone=XX, province=XX, city=XX, company=XX, password=XX)
     :param password: 全为数字的字符串(长度不少于6位)
     :return:
     """
-    check = checkParamFormat(phone, password)
-    if check == True:
-        demo = PersonUnicom()
-        result = demo.startSpider(phone, password)
-        return result
-    else:
-        return check
+    demo = PersonUnicom()
+    result = demo.startSpider(phone_attr)
+    return result
 # end
 
 if __name__ == '__main__':
-    result = chinaUnicomAPI('13267175437','251314')
-    for item in result.items():
-        print item
+
+    from three_operators.necessary.phone_attr import getAttributes
+
+    phone_attr = getAttributes('15802027662')
+    if phone_attr:
+        phone_attr['password'] = '251314'
+        result = chinaUnicomAPI(phone_attr)
+        for item in result.items():
+            print item
+    else:
+        print '无法查询号码的归属信息,bye!'
     # print apiChinaUnicom('18617112670', '662670')
