@@ -12,26 +12,31 @@ import time
 from math import ceil
 
 import gevent
+import public.db_config as DB
+import configuration.columns as config
 from gevent import monkey; monkey.patch_all()
 from requests.utils import dict_from_cookiejar
 from threadpool import ThreadPool, makeRequests
 
 from necessary.param_date import getDateSeq
-from configuration.columns import user_keys
-from public.share_func import userAgent, basicRequest, getTimestamp
+from configuration.columns import KEY_CONVERT_USER
+from public.share_func import userAgent, basicRequest, getTimestamp, clawLog, makeDirs
 
-class PersonUnicom(object):
+_thread_num = 3
+
+class ChinaUnicom(object):
     """中国联通爬虫"""
     def __init__(self):
         self.headers = {
             'Accept': '*/*',
-            'User-Agent': None,
+            'User-Agent': userAgent(),
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'gzip, deflate',
             'Connection': 'keep-alive',
         }
         self.cookies  = dict()
-        self.headers['User-Agent'] = userAgent()
+        self.user_items = list()   # 用户信息
+        self.call_items = list()   # 通话信息
     # end
 
     def loginSys(self, phone, password):
@@ -122,7 +127,7 @@ class PersonUnicom(object):
         return sysCheckLogin()
     # end
 
-    def clawUserInfo(self, phone_info):
+    def getUserInfo(self, phone_attr):
         """ 爬取用户信息
         :return: sysCheckLoginAgain()
         """
@@ -151,13 +156,13 @@ class PersonUnicom(object):
 
             response = basicRequest(options)
             if response:
-                phone_info['balance'] = json.loads(response.text, encoding='utf-8')['result']['account']
-                return getUserInfos()
+                phone_attr['balance'] = json.loads(response.text)['result']['account']
+                return getUserRecord()
             else:
                 return dict(result=4000, func='getHeaderView')
         # def
 
-        def getUserInfos():
+        def getUserRecord():
             """ 获得用户信息
             :return:
             """
@@ -168,14 +173,14 @@ class PersonUnicom(object):
 
             response = basicRequest(options)
             if response:
-                detail = json.loads(response.text, encoding='utf-8')['result']['MyDetail']
-                detail = dict(detail, **phone_info)
-                result = dict()
-                for k, v in detail.items():
-                    if k in user_keys.keys():
-                        key = user_keys[k]
-                        result[key] = v
-                return result
+                item = dict()
+                result = json.loads(response.text)['result']
+                item['user_valid'] = result['usercirclestatus']
+                for k, v in result['MyDetail'].items():
+                    if k in KEY_CONVERT_USER.keys():
+                        columm_name = KEY_CONVERT_USER[k]
+                        item[columm_name] = v
+                return dict(item, **phone_attr)
             else:
                 return dict(result=4000, func='clawCallRecords')
         # def
@@ -184,12 +189,12 @@ class PersonUnicom(object):
     # end
 
 
-    def clawCallInfo(self):
+    def getCallInfo(self):
 
         def clawMonthCall(month):
             text = clawPageCall(month)
             try:
-                page_json = json.loads(text, encoding='utf8')
+                page_json = json.loads(text)
             except (ValueError,Exception):
                 return
             if 'errorMessage' in page_json.keys():  # 存在错误
@@ -280,41 +285,32 @@ class PersonUnicom(object):
             else:
                 return False
         # def
-        print '测试:多线程开始爬取6个月数据'
+
         t_start = time.time()
         text_seq = list()
         date_seq = getDateSeq()
 
-        pool = ThreadPool(3)
+        pool = ThreadPool(_thread_num)
         requests = makeRequests(clawMonthCall, date_seq)
         [pool.putRequest(req) for req in requests]
         pool.wait()
 
         print '结束:所有的通话记录数据的总页数为：{0}'.format(len(text_seq))
         print '统计:爬取通话记录耗费{0}秒'.format(time.time() - t_start)
-        return self.parseCallJson(text_seq)
+        return self.parseCallInfo(text_seq)
     # end
 
-    def parseCallJson(self, seq):
-        # cert_id, phone, call_area,   call_date, call_time, call_cost, call_long,   other_phone, call_type,   land_type
-        # certnum, phone,homeareaName,calldate,  calltime,  totalfee,  calllonghour,  other_num,  calltypeName,landtype
-        rows = list()
-        field_seq = ('homeareaName', 'calldate', 'calltime', 'totalfee',
-                    'calllonghour', 'othernum', 'calltypeName', 'landtype')
-        columns = ('call_area', 'call_date', 'call_time', 'call_cost',
-                   'call_long', 'other_phone', 'call_type', 'land_type')
-
-        for text in seq:
-            print text
+    def parseCallInfo(self, text_seq):
+        for text in text_seq:
             try:
-                result = json.loads(text, encoding='utf-8')
+                result = json.loads(text)
             except (KeyError,ValueError,Exception):
                 continue
             if 'errorMessage' in result.keys(): # 没有数据
                 continue
             else:
                 temp = dict()
-                temp['cert_id'],temp['phone'] = result['userInfo']['certnum'], result['userInfo']['usernumber']
+                # temp['cert_id'],temp['phone'] = result['userInfo']['certnum'], result['userInfo']['usernumber']
                 results = result['pageMap']['result']   # results is a list which contains lots of dict
                 for i in results:
                     item = dict()
@@ -327,37 +323,19 @@ class PersonUnicom(object):
         return rows
     # end
 
-    def logoutSys(self):
-        """ logout without check """
-        url = 'http://iservice.10010.com/e3/static/common/logout?_=' + getTimestamp()
-        options = {'method':'post', 'url':url, 'cookies':None, 'headers':self.headers}
-
-        response = basicRequest(options,resend_times=0)
-        if response:
-            return dict(result=2000)
-        else:
-            pass
-    # end
-
-    def startSpider(self, phone_attr):
-        """ 触发爬虫
-        :param phone: 手机号码
-        :param password: 服务密码
-        :return:
+    def saveItems(self):
+        """  保存数据到mysql
+        :return: None
         """
-        t_start = time.time()
-        login_result = self.loginSys(phone_attr['phone'], phone_attr['password'])
-        print u'时间:登录耗费{0}秒'.format(time.time() - t_start)
+        valid_num  = len(self.user_items)
+        invalid_num = len(self.call_items)
 
-        if login_result['result'] == 2000:
-            t_start = time.time()
-            user = self.clawUserInfo(phone_attr) # 爬取用户信息
-            print u'时间:爬取用户信息耗费{0}秒'.format(time.time() - t_start)
+        if valid_num:
+            DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_USER, self.user_items)
+        if invalid_num:
+            DB.insertDictList(config.TABLE_NAME_2, config.COLUMN_CALL, self.call_items)
 
-            call = self.clawCallInfo() # 爬取通话记录
-            return dict(t_china_unicom_uesr=[user], t_china_unicom_call=call)
-        else:
-            return login_result
+        return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end
 
     @staticmethod
@@ -374,16 +352,30 @@ def chinaUnicomAPI(phone_attr):
     :param password: 全为数字的字符串(长度不少于6位)
     :return:
     """
-    demo = PersonUnicom()
-    result = demo.startSpider(phone_attr)
-    return result
+    makeDirs()
+    spider = ChinaUnicom()
+    login_result = spider.loginSys(phone_attr['phone'], phone_attr['password'])
+    if login_result['result'] != 2000:
+        return login_result
+
+    spider.getUserInfo(phone_attr)
+    spider.getCallInfo()
+
+    log = spider.saveItems()
+    clawLog(phone_attr, log)
+
+    return dict(
+        t_operator_user = spider.user_items,
+        t_operator_call = spider.call_items
+    )
 # end
+
 
 if __name__ == '__main__':
 
     from three_operators.necessary.phone_attr import getAttributes
 
-    phone_attr = getAttributes('15802027662')
+    phone_attr = getAttributes('13267175437')
     if phone_attr:
         phone_attr['password'] = '251314'
         result = chinaUnicomAPI(phone_attr)

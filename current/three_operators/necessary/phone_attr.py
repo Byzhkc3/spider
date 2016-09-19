@@ -33,7 +33,7 @@ def getAttributes(phone_num):
     :return:dict(phone=XX, province=XX, city=XX, company=XX)/raise ValueError
     example:
         >>searchPhoneInfo('15802028888')
-        {'phone':'15802028888', 'province':'广东', 'city':'广州', 'company':2}
+        {'phone':'13267175437', 'province':'广东', 'city':'广州', 'company':2}
         company值:中国联通1; 中国移动2; 中国电信3, 其他4
     """
     phone_status = 6855 if str(phone_num)[0] == '0' else 6004

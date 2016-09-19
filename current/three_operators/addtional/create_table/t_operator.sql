@@ -14,9 +14,9 @@ create table `t_operator_user`(
     `cert_num` varchar(32) default null comment '证件号码',
 
     `phone` varchar(32)  not null comment '手机号',
-    `phone_type` tinyint not null comment '手机号类型[联通1,移动2,电信3]',
-    `attr_province` varchar(128) not null comment '归属地-省',
-    `attr_city` varchar(128) not null comment '归属地-市',
+    `company` tinyint not null comment '手机号类型[联通1,移动2,电信3]',
+    `province` varchar(128) not null comment '归属地-省',
+    `city` varchar(128) not null comment '归属地-市',
     `product_name` varchar(64) not null comment '套餐',
     `level` varchar(32) not null comment '用户等级',
     `open_date` datetime default null comment '入网时间/认证时间',
