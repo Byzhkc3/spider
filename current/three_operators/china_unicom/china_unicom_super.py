@@ -23,6 +23,7 @@ from necessary.param_date import getDateSeq
 from configuration.columns import KEY_CONVERT_USER
 from public.share_func import userAgent, basicRequest, getTimestamp, clawLog, makeDirs
 
+
 _thread_num = 3
 
 class ChinaUnicom(object):
@@ -304,8 +305,8 @@ class ChinaUnicom(object):
     def parseCallInfo(self, text_seq):
 
         item = {
-            'cert_num': self.user_items['cert_num'],
-            'phone': self.user_items['phone']
+            'cert_num': self.user_items[0]['cert_num'],
+            'phone': self.user_items[0]['phone']
         }
 
         for text in text_seq:
@@ -320,12 +321,30 @@ class ChinaUnicom(object):
                         if k in config.KEY_CONVERT_CALL.keys():
                             column_name = config.KEY_CONVERT_CALL[k]
                             temp[column_name] = v
-                    # 入库修正
-
+                    self.convertValues(temp) # 入库修正
                     self.call_items.append(temp)
                 # for
         # for
     # end
+
+    def convertValues(self,item):
+
+        key = item.keys()
+        if 'call_type' in key:
+            call_type = {u'主叫': 1, u'被叫': 2 }
+            if item['call_type'] in call_type.keys():
+                item['call_type'] = call_type[item['call_type']]
+            else:
+                item['call_type'] = 3
+
+        if 'land_type'in key:
+            land_type = {u'本地通话': 1, u'省内通话': 2}
+            if item['land_type'] in land_type.keys():
+                item['land_type'] = land_type[item['land_type']]
+            else:
+                item['land_type'] = 3
+    # end
+
 
     def saveItems(self):
         """  保存数据到mysql

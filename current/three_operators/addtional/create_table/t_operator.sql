@@ -19,10 +19,10 @@ create table `t_operator_user`(
     `city` varchar(128) not null comment '归属地-市',
     `product_name` varchar(64) not null comment '套餐',
     `level` varchar(32) not null comment '用户等级',
-    `open_date` datetime default null comment '入网时间/认证时间',
-    `balance` float default null default 0 comment '账户余额',
+    `open_date` varchar(16) default null comment '入网时间/认证时间',
+    `balance` float default null comment '账户余额',
     
-    `user_valid` tniyint default 1 comment '用户当前状态[有效期1,其他0]',
+    `user_valid` tinyint default 1 comment '用户当前状态[有效期1,其他0]',
     
      unique key `unique_user`(`cert_num`, `phone`)
 
@@ -47,7 +47,7 @@ create table `t_operator_call`(
 
     `other_phone` varchar(16) not null comment '对方号码 ',
     `call_type` varchar(32) not null comment '呼叫类型(主叫1,被叫2,其他3)',
-    `land_type` tinyint not  null comment '通话类型(本地通话1,省内通话2,其他3)',
+    `land_type` tinyint not null comment '通话类型(本地通话1,省内通话2,其他3)',
     
     index `user` (`cert_num`,`phone`) comment '建立索引便于快速inner join',
     unique key `unique_call` (`phone`, `call_date`, `call_time`, `other_phone`)
