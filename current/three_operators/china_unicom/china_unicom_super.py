@@ -377,9 +377,9 @@ def chinaUnicomAPI(phone_attr):
     """
     makeDirs()
     spider = ChinaUnicom()
-    login_result = spider.loginSys(phone_attr['phone'], phone_attr['password'])
-    if login_result['result'] != 2000:
-        return login_result
+    login = spider.loginSys(phone_attr['phone'], phone_attr['password'])
+    if login['result'] != 2000:
+        return login
 
     spider.getUserInfo(phone_attr)
     spider.getCallInfo()
