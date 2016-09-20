@@ -15,7 +15,8 @@ create table `t_zhixing_valid`(
 	`court_name` varchar(128) not null comment '执行法院',  			
 	`execute_money` varchar(64) default null comment '金额',     	   
 
-	unique key `unique_id` (`sys_id`)
+	unique key `unique_id` (`sys_id`),
+  index `search`(`name`, `card_num`)
 
 )engine = innodb default charset=utf8 auto_increment=1 comment='执行-有效id的记录';
 
@@ -31,7 +32,8 @@ create table `t_zhixing_invalid`(
 	`err_type` tinyint not null comment '1表示请求失败,2表示超时,3表示未知错误',
 	`flag` tinyint default 1 comment '1表示未处理,0表示已处理',
 
-	unique key `unique_id` (`sys_id`)
+	unique key `unique_id` (`sys_id`),
+  index `search`(`err_type`, `flag`)
 
 )engine = innodb default charset=utf8 auto_increment=1 comment='执行-无效id的记录';
 

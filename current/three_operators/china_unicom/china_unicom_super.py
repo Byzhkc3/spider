@@ -10,6 +10,7 @@ import json
 import re
 import time
 from math import ceil
+from copy import copy
 
 import gevent
 import public.db_config as DB
@@ -175,12 +176,12 @@ class ChinaUnicom(object):
             if response:
                 item = dict()
                 result = json.loads(response.text)['result']
-                item['user_valid'] = result['usercirclestatus']
+                item['user_valid'] = 1 if result['usercirclestatus'] == u'有效期' else 0
                 for k, v in result['MyDetail'].items():
                     if k in KEY_CONVERT_USER.keys():
                         columm_name = KEY_CONVERT_USER[k]
                         item[columm_name] = v
-                return dict(item, **phone_attr)
+                self.user_items.append(dict(item, **phone_attr))
             else:
                 return dict(result=4000, func='clawCallRecords')
         # def
@@ -232,7 +233,7 @@ class ChinaUnicom(object):
             response = basicRequest(options)
             if response:
                 try:
-                    page_json = json.loads(response.text, encoding='utf8')
+                    page_json = json.loads(response.text)
                 except ValueError:
                     pass
                 else:
@@ -270,7 +271,7 @@ class ChinaUnicom(object):
             response = basicRequest(options)
             if response:
                 try:
-                    page_json = json.loads(response.text, encoding='utf8')
+                    page_json = json.loads(response.text)
                 except ValueError:
                     return False
                 else:
@@ -301,26 +302,29 @@ class ChinaUnicom(object):
     # end
 
     def parseCallInfo(self, text_seq):
+
+        item = {
+            'cert_num': self.user_items['cert_num'],
+            'phone': self.user_items['phone']
+        }
+
         for text in text_seq:
             try:
-                result = json.loads(text)
+                results = json.loads(text)['pageMap']['result']
             except (KeyError,ValueError,Exception):
                 continue
-            if 'errorMessage' in result.keys(): # 没有数据
-                continue
             else:
-                temp = dict()
-                # temp['cert_id'],temp['phone'] = result['userInfo']['certnum'], result['userInfo']['usernumber']
-                results = result['pageMap']['result']   # results is a list which contains lots of dict
-                for i in results:
-                    item = dict()
-                    for index,key in enumerate(field_seq):
-                        item[columns[index]] = i[key]
-                    item.update(temp)
-                    rows.append(item)
+                for record in results:
+                    temp = copy(item)
+                    for k, v in record.items():
+                        if k in config.KEY_CONVERT_CALL.keys():
+                            column_name = config.KEY_CONVERT_CALL[k]
+                            temp[column_name] = v
+                    # 入库修正
+
+                    self.call_items.append(temp)
                 # for
         # for
-        return rows
     # end
 
     def saveItems(self):

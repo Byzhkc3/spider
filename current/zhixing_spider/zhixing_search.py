@@ -292,8 +292,8 @@ def zhixingSearchAPI(name='', card_num=''):
     clawLog(spider.id_seq, result)
 
     return dict(
-        t_zhixing_valid=spider.valid_items,
-        t_zhixing_invalid=spider.invalid_items
+        t_zhixing_valid = spider.valid_items,
+        t_zhixing_invalid = spider.invalid_items
     )
 # end
 
@@ -303,8 +303,11 @@ if __name__ == '__main__':
     t_begin = time.time()
     print time.ctime() + ':\t' + 'Test start'
 
-    card_num = '68087331-4'
-    name = '漳州千禧餐饮有限公司'
+    card_num = '77535404-X'
+    name = '漳州伟翔精密机械有限公司'
+
+    # card_num = ''
+    # name = '何计通'
     results = zhixingSearchAPI(name, card_num)
 
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n'.format(time.time()-t_begin)
