@@ -119,14 +119,14 @@ def basicRequest(options, resend_times=1):
     """
     keys = options.keys()
     options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-    proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
+    # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
 
     try:
         response = request(
             options['method'],
             options['url'],
             timeout = options['timeout'],
-            proxies = proxies if 'proxies' not in keys else None,
+            # proxies = proxies if 'proxies' not in keys else None,
             verify = options['verify'] if 'verify' in keys else False,
             data = options['form'] if 'form' in keys else None,
             params = options['params'] if 'params' in keys else None,
