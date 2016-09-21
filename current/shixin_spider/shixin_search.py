@@ -115,7 +115,7 @@ class ShiXinSpider(object):
         else:
             re_num -= 1
             return self.getCode( re_num) if re_num > 0 else False
-    # end getCode
+    # end getNoteCode
 
     def searchByCardNumAndName(self, pw_code, name, card_num, re_num=2):
         """ 通过身份证号/公司号查记录,提取当前页的所有id
@@ -234,8 +234,8 @@ class ShiXinSpider(object):
             else:
                 result = dict()
                 for k, v in item.items():
-                    if k in config.KEY_COLUMN.keys():
-                        key = config.KEY_COLUMN[k]
+                    if k in config.KEY_CONVERT_VALID.keys():
+                        key = config.KEY_CONVERT_VALID[k]
                         result[key] = v
                 result['flag']  = 1 if 'businessEntity' in item.keys() else 0
                 self.valid_items.append(result)
@@ -254,7 +254,7 @@ class ShiXinSpider(object):
         if valid_num:
             DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_VALID, self.valid_items)
         if invalid_num:
-            DB.insertDictList(config.TABLE_NAME_2, config.COLUMN_INVALID, self.invalid_items)
+            DB.insertDictList(config.TABLE_NAME_2, config.KEY_CONVERT_INVALID, self.invalid_items)
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end

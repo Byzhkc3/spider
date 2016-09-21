@@ -17,16 +17,17 @@ KEY_CONVERT_USER = {
     'opendate': 'open_date',
 }
 
+
 # 通话记录内容字段转换
 KEY_CONVERT_CALL = {
-    'homeareaName': 'call_area',
-    'calldate': 'call_date',
-    'calltime': 'call_time',
-    'totalfee':  'call_cost',
-    'calllonghour': 'call_long',
-    'othernum': 'other_phone',
-    'calltypeName': 'call_type',
-    'landtype': 'land_type'
+    'place': 'call_area',
+    'time': 'call_date',
+    # 'time': 'call_time',
+    'chargefee':  'call_cost',
+    'period': 'call_long',
+    'contnum': 'other_phone',
+    'becall': 'call_type',
+    'conttype': 'land_type'
 }
 
 # 短信记录内容字段转换

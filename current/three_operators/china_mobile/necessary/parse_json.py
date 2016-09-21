@@ -36,9 +36,4 @@ def parseCallJson(seq,id_and_phone):
     return rows
 # end
 
- # month_json = json.loads(text, encoding='utf8')
- #            if 'errorMsg' in month_json['content'].keys():
- #                print month_json['content']['failId']
- #                continue
- #            else:
- #                pass
+

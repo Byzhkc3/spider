@@ -5,7 +5,7 @@ TABEL_NAME_1 = 't_shixin_valid'
 TABLE_NAME_2 = 't_shixin_invalid'
 
 # 字典key对应也请求返回内容的key,value对应存储表的字段名
-KEY_COLUMN = {
+KEY_CONVERT_VALID = {
     'id': 'sys_id',
     'iname': 'name',
     'age': 'age',
@@ -26,10 +26,10 @@ KEY_COLUMN = {
 }
 
 # COLUMN_VALID为表t_shixin_valid对应的字段名
-COLUMN_VALID = KEY_COLUMN.values()
+COLUMN_VALID = KEY_CONVERT_VALID.values()
 COLUMN_VALID.append('flag')
 
 # COLUMN_INVALID为表t_shixin_invalid对应的字段名
-COLUMN_INVALID = ('sys_id', 'err_type')
+KEY_CONVERT_INVALID = ('sys_id', 'err_type')
 
 

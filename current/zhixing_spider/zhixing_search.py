@@ -91,7 +91,7 @@ class ZhiXingSpider(object):
         else:
             re_num -= 1
             return self.getCode(re_num) if re_num > 0 else False
-    # end getCode
+    # end getNoteCode
 
     def searchByCardNum(self, name, card_num, re_num=2):
         """ 通过身份证号/公司号查记录

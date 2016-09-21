@@ -117,7 +117,7 @@ class ZhiXingSpider(object):
             re_num -= 1
             time.sleep(random.uniform(0, 1))
             return self.getCode(re_num) if re_num > 0 else False
-    # end getCode
+    # end getNoteCode
 
 
     def getJson(self, sys_id):

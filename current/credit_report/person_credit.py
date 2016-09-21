@@ -98,7 +98,7 @@ class PersonCredit(object):
             image = saveImage(response)
             return self.recogImage(image)
         else:
-            return dict(result=4000, func='getCode')
+            return dict(result=4000, func='getNoteCode')
     # end
 
 
