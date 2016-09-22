@@ -1,15 +1,15 @@
 #coding=utf-8
-
 """
 Author: moyh
 Date:   2016/9/7
-alter:  变更为流程[没有线程/协程]
+alter:  集合多个几口版本
 """
 import re
 import json
 import time
 
 from math import ceil
+import gevent
 from lxml import etree
 from requests.utils import dict_from_cookiejar
 
@@ -21,7 +21,7 @@ from public.share_func import userAgent, \
 
 class ShiXinSpider(object):
     """失信人记录spider"""
-    def __init__(self):
+    def __init__(self, name, card_num):
         self.headers = {
             'Referer': '',
             'X-Forwarded-For': getIp(),
@@ -32,14 +32,12 @@ class ShiXinSpider(object):
             'Accept-Encoding': 'gzip, deflate, sdch',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         }
-        self.cookies = dict()
-
-        self.name = None                # 个人姓名/公司名
-        self.card_num = None            # 身份证号/企业号
-
-        self.id_seq = list()
-        self.valid_items = list()       # 有效id
-        self.invalid_items = list()     # 无效/出错id
+        self.cookies = dict()           # 全局cookies
+        self.name = name                # 个人姓名/公司名
+        self.card_num = card_num        # 身份证号/企业号
+        self.id_seq = list()            # 查询结果id序列
+        self.valid_items = list()       # 有效记录
+        self.invalid_items = list()     # 无效记录
     # end
 
 
@@ -50,7 +48,6 @@ class ShiXinSpider(object):
         def visitSys():
             url = 'http://shixin.court.gov.cn/'
             options = {'method': 'get', 'url':url, 'headers': self.headers}
-
             response = basicRequest(options)
             if response:
                 self.cookies.update(dict_from_cookiejar(response.cookies))
@@ -64,7 +61,6 @@ class ShiXinSpider(object):
             url = 'http://shixin.court.gov.cn/image.jsp'
             self.headers['Referer'] = 'http://shixin.court.gov.cn/'
             options = {'method': 'get', 'url': url, 'cookies': self.cookies, 'headers': self.headers}
-
             response = basicRequest(options)
             if response:
                 self.cookies.update(dict_from_cookiejar(response.cookies))
@@ -78,7 +74,6 @@ class ShiXinSpider(object):
             url = 'http://shixin.court.gov.cn/visit.do'
             self.headers['Referer'] = 'http://shixin.court.gov.cn/'
             options = {'method': 'get', 'url': url, 'cookies': self.cookies, 'headers': self.headers}
-
             response = basicRequest(options)
             if response:
                 self.cookies.update(dict_from_cookiejar(response.cookies))
@@ -102,7 +97,6 @@ class ShiXinSpider(object):
         self.headers['Accept'] = 'image/webp,image/*,*/*;q=0.8'
         self.headers['Referer'] = 'http://shixin.court.gov.cn/'
         options = {'method': 'get', 'url': url, 'cookies': self.cookies, 'headers': self.headers}
-
         response = basicRequest(options)
         if response and len(response.text):
             self.cookies.update(dict_from_cookiejar(response.cookies))
@@ -115,25 +109,18 @@ class ShiXinSpider(object):
         else:
             re_num -= 1
             return self.getCode( re_num) if re_num > 0 else False
-    # end getNoteCode
+    # end
 
-    def searchByCardNumAndName(self, pw_code, name, card_num, re_num=2):
+    def searchByCardNumAndName(self, pw_code, re_num=2):
         """ 通过身份证号/公司号查记录,提取当前页的所有id
         :return: int
         """
-        self.name = name
-        self.card_num = card_num
-
         form = {
             'pProvince': '0',
-            'pCode': '2218',
-            'pCardNum': '70289247-X',
-            'pName': '大庆万宝物资储运有限公司'
+            'pCode': pw_code,
+            'pName': self.name,
+            'pCardNum': self.card_num
         }
-        form['pName'] = name
-        form['pCode'] = pw_code
-        form['pCardNum'] = card_num
-
         url = 'http://shixin.court.gov.cn/findd'
         self.headers['Referer'] = 'http://shixin.court.gov.cn/'
         options = {'method': 'post', 'url': url, 'form': form,
@@ -150,7 +137,7 @@ class ShiXinSpider(object):
             except AttributeError:
                 re_num -= 1
                 pw_code = self.getCode()
-                return self.searchByCardNumAndName(pw_code, name, card_num, re_num) if re_num > 0 else False
+                return self.searchByCardNumAndName(pw_code, re_num) if re_num > 0 else False
             else:
                 if tr_num > 0:
                     page_num = int(ceil((tr_num)/10.0))
@@ -174,17 +161,12 @@ class ShiXinSpider(object):
         :return:None
         """
         form = {
-            'pProvince':'0',
-            'pCode':'2218',
-            'currentPage':'2',
-            'pCardNum':'70289247-X',
-            'pName':'大庆万宝物资储运有限公司'
+            'pProvince': '0',
+            'pCode':  pw_code,
+            'currentPage':page_i,
+            'pName':  self.name,
+            'pCardNum': self.card_num,
         }
-        form['pCode'] = pw_code
-        form['pName']  = self.name
-        form['pCardNum'] = self.card_num
-        form['currentPage'] = page_i
-
         url = 'http://shixin.court.gov.cn/findd'
         self.headers['Referer'] = 'http://shixin.court.gov.cn/findd'
         options = {'method':'post', 'url':url, 'form':form,
@@ -260,17 +242,18 @@ class ShiXinSpider(object):
     # end
 
 
-def shixinSearchAPI(name, card_num=''):
+def shixinSearchAPI(name, card_num='', api_type=1):
     """ 查询接口,名称必须,证件号可缺省
     :param name: 名称
     :card_num: 证件号
+    :api_type: 1为调用协程版本，其他为流程版
     :return: dict(t_shixin_valid=[], t_shixin_invalid=[]) / {}
     """
     makeDirs()
     if not name :
         raise ValueError
 
-    spider = ShiXinSpider()
+    spider = ShiXinSpider(name, card_num)
     cookie = spider.getCookies()
     if not cookie:
         return {}
@@ -279,17 +262,29 @@ def shixinSearchAPI(name, card_num=''):
     if not pw_code:
         return {}
 
-    result = spider.searchByCardNumAndName(pw_code, name, card_num)
+    result = spider.searchByCardNumAndName(pw_code)
     if not result:
         return {}
 
     if result['page_num'] > 1:
-        for page_i in range(2, result['page_num']+1):
-            spider.changePage(result['pw_code'], page_i)
+        if api_type == 1:
+            objs = list()
+            for page_i in range(2, result['page_num']+1):
+                objs.append(gevent.spawn(spider.changePage, result['pw_code'], page_i))
+            gevent.joinall(objs)
+        else:
+            for page_i in range(2, result['page_num']+1):
+                spider.changePage(result['pw_code'], page_i)
 
     if spider.id_seq:
-        for sys_id in spider.id_seq:
-            spider.getJson(sys_id , result['pw_code'])
+        if api_type == 1:
+            objs = list()
+            for sys_id in spider.id_seq:
+                objs.append(gevent.spawn(spider.getJson, sys_id , result['pw_code']))
+            gevent.joinall(objs)
+        else:
+            for sys_id in spider.id_seq:
+                spider.getJson(sys_id , result['pw_code'])
 
     log = spider.saveItems()
     clawLog(spider.id_seq, log)
@@ -308,12 +303,10 @@ if __name__ == '__main__':
 
     # card_num = '72217220X'
     # name = '遵义侨丰房地产开发有限责任公司'
-
     card_num = ''
-    name = '曹俊元'
+    name = u'曹俊元'
 
     results = shixinSearchAPI(name, card_num)
-
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n\n'.format(time.time()-t_begin)
     print results
 

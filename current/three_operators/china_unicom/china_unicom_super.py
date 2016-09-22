@@ -398,6 +398,7 @@ if __name__ == '__main__':
 
     from three_operators.necessary.phone_attr import getAttributes
 
+    t_begin = time.time()
     phone_attr = getAttributes('13267175437')
     if phone_attr:
         phone_attr['password'] = '251314'
@@ -406,4 +407,5 @@ if __name__ == '__main__':
             print item
     else:
         print '无法查询号码的归属信息,bye!'
-    # print apiChinaUnicom('18617112670', '662670')
+
+    print u'整个流程耗费用时:{0}'.format(time.time()-t_begin)

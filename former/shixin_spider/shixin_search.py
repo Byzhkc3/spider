@@ -12,10 +12,6 @@ from lxml import etree
 from requests.exceptions import *
 from requests.utils import dict_from_cookiejar
 from gevent import monkey; monkey.patch_all()
-from requests.packages.urllib3 import disable_warnings
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-disable_warnings(InsecureRequestWarning)
-
 # from public.insert_dicts import insertDicts
 from configuration.column_cfg import valid_keys, invalid_columns
 from public.share_func import userAgent, basicRequest, getIp, recogImage, makeDirs, clawLog
@@ -37,19 +33,15 @@ class ShiXinSpider(object):
         }
 
         self.cookies = dict()
-
         self.name = None                # 个人姓名/公司名
         self.card_num = None            # 身份证号/企业号
-
         self.id_seq = list()
         self.valid_items = list()       # 有效id
         self.invalid_items = list()     # 无效/出错id
-
-        self.threshold = 3
     # end
 
 
-    def updateCookies(self):
+    def getCookies(self):
         """ 获取cookies
         :return: dict obj/False """
 
@@ -289,7 +281,7 @@ def searchByCardNumAPI(name, card_num=''):
         raise ValueError
 
     spider = ShiXinSpider()
-    cookie = spider.updateCookies()
+    cookie = spider.getCookies()
     if not cookie:
         return {}
 
@@ -333,7 +325,7 @@ if __name__ == '__main__':
     cost_seconds = time.time()-t_begin
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n'.format(cost_seconds)
 
-    print results['t_shixin_valid'][0].keys()
+    print results
     # for item in results['valid']:
     #     print item
 

@@ -10,27 +10,24 @@ Date:
 Author:
     moyh
 """
-from copy import copy
-
 import sys
 reload(sys)
 sys.path.append('../')
 sys.setdefaultencoding("utf-8")
 
+
+from copy import copy
 import time,json,random,re
 from lxml import etree
+import public.db_config as DB
 from selenium import webdriver
 from selenium.common.exceptions import *
 
-from three_operators.china_mobile.necessary.parse_json import parseCallJson
 from three_operators.china_mobile.necessary.mobile_month import getMonthSeq
 import three_operators.china_mobile.configuration.columns as config
 
-try:
-    from public import ConfigOperate, userAgent,\
-        basicRequest,searchPhoneInfo,checkParamFormat
-except ImportError as import_error:
-    print import_error
+from public import userAgent, basicRequest
+
 
 _time_usual = 10
 _time_special = 60
@@ -73,7 +70,7 @@ class ChinaMobile_GD(object):
     def getCode(self):
 
         url = 'http://gd.10086.cn/my/REALTIME_LIST_SEARCH.shtml'
-        browser = webdriver.Chrome()
+        browser = webdriver.PhantomJS(r'C:\driver\phantomjs.exe')
         browser.get(url)
         browser.implicitly_wait(_time_usual)  # open the login page
         ChinaMobile_GD.timeSleep()
@@ -227,40 +224,40 @@ class ChinaMobile_GD(object):
                         if k in config.KEY_CONVERT_CALL.keys():
                                 column_name = config.KEY_CONVERT_CALL[k]
                                 temp[column_name] = v
-                        try:
-                            self.convertValues(temp)  # 入库修正
-                        except Exception as ex:
-                            print ex,
-                            for k,v in temp.items():
-                                print k, v
+                    try:
+                        self.convertValues(temp)  # 入库修正
+                    except Exception as ex:
+                        print ex
+                        for k,v in temp.items():
+                            print k, v
                     self.call_items.append(temp)
         else:
             print 'call records not found'
     # end
 
 
-    def convertValues(self,item):
-        key = item.keys()
+    def convertValues(self,temp):
+        key = temp.keys()
 
         if 'call_type' in key:
             call_type = {u'主叫': 1, u'被叫': 2 }
-            if item['call_type'] in call_type.keys():
-                item['call_type'] = call_type[item['call_type']]
+            if temp['call_type'] in call_type.keys():
+                temp['call_type'] = call_type[temp['call_type']]
             else:
-                item['call_type'] = 3
+                temp['call_type'] = 3
 
         if 'land_type'in key:
             land_type = {u'本地': 1, u'国内长途': 2}
-            if item['land_type'] in land_type.keys():
-                item['land_type'] = land_type[item['land_type']]
+            if temp['land_type'] in land_type.keys():
+                temp['land_type'] = land_type[temp['land_type']]
             else:
-                item['land_type'] = 3
+                temp['land_type'] = 3
 
         if 'call_date' in key:
              # '04-01 11:18:50' 对时间进行分割
-            temp =  item['call_date'].split(' ')
-            item['call_date'] = '2016-' + temp[0]
-            item['call_time'] = temp[1]
+            temp =  temp['call_date'].split(' ')
+            temp['call_date'] = '2016-' + temp[0]
+            temp['call_time'] = temp[1]
     # end
 
     def getFiveMonthCall(self):
@@ -307,12 +304,9 @@ class ChinaMobile_GD(object):
 
         def getMonthRecords(unique_tag):
 
-            form = dict(uniqueTag='20160721164253242', monthListType='0')
-            form['uniqueTag'] = unique_tag
-
+            form = dict(uniqueTag=unique_tag, monthListType='0')
             url = 'http://gd.10086.cn/commodity/servicio/nostandardserv/realtimeListSearch/ajaxRealQuery.jsps'
             options = {'method':'post', 'url':url, 'form':form, 'cookies':self.cookies, 'timeout':20, 'headers':self.__headers}   # pay attention to "timeout"
-
             response = basicRequest(options)
             if response:
                 return response.text
@@ -321,6 +315,22 @@ class ChinaMobile_GD(object):
         # def
         return getUniqueTag()
     # end
+
+    def saveItems(self):
+        """  保存数据到mysql
+        :return: None
+        """
+        valid_num  = len(self.user_items)
+        invalid_num = len(self.call_items)
+
+        if valid_num:
+            DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_USER, self.user_items)
+        if invalid_num:
+            DB.insertDictList(config.TABLE_NAME_2, config.COLUMN_CALL, self.call_items)
+
+        return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
+    # end
+
 # class
 
 

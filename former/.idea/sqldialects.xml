@@ -2,5 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/shixin_spider/additional/create_table/t_shixin.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/zhixing_spider/additional/create_table/t_zhixing.sql" dialect="MySQL" />
   </component>
 </project>

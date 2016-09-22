@@ -1,0 +1,39 @@
+[INFO  - 2016-09-22T09:01:36.270Z] GhostDriver - Main - running on port 60517
+[INFO  - 2016-09-22T09:01:39.704Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2016-09-22T09:01:39.704Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.customHeaders:  - {}
+[INFO  - 2016-09-22T09:01:39.704Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"windows-10-32bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2016-09-22T09:01:39.704Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 2c8f4430-80a3-11e6-94e9-d9a0fc89a503
+[ERROR - 2016-09-22T09:01:42.078Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.onError - msg: ObjectUtils.isJson catch a exception: SyntaxError: JSON Parse error: Unrecognized token '<'
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-09-22T09:01:42.079Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.onError - stack:
+  error (https://gd.ac.10086.cn/ucs/js/excavator.js:1)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-09-22T09:01:42.218Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.onError - msg: ObjectUtils.isJson catch a exception: SyntaxError: JSON Parse error: Unrecognized token '<'
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2016-09-22T09:01:42.218Z] Session [2c8f4430-80a3-11e6-94e9-d9a0fc89a503] - page.onError - stack:
+  error (https://gd.ac.10086.cn/ucs/js/excavator.js:1)
+
+[INFO  - 2016-09-22T09:05:09.351Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:10:09.352Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:15:09.354Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:20:09.354Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:25:09.354Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:30:09.368Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:35:09.369Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:40:09.369Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:45:09.371Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:50:09.371Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:55:09.371Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T10:00:09.371Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+anupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:26:36.276Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:31:36.276Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:36:36.570Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:41:36.571Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:46:36.572Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:51:36.573Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T09:56:36.573Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2016-09-22T10:01:36.573Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW

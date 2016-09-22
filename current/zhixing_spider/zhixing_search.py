@@ -1,10 +1,17 @@
 #coding=utf-8
+"""
+Author: moyh
+Date:   2016/9/7
+alter:  变更为流程[没有线程/协程]
+"""
 import re
 import sys
 import json
 import time
 import random
 from math import ceil
+import gevent
+
 sys.path.append('../')
 
 from lxml import etree
@@ -19,7 +26,7 @@ _timeout = 5
 
 class ZhiXingSpider(object):
     """根据身份证号/企业号查询执行信息,流程版"""
-    def __init__(self):
+    def __init__(self, name, card_num):
         self.headers = {
             'Referer': '',
             'User-Agent': userAgent(),
@@ -30,8 +37,10 @@ class ZhiXingSpider(object):
             'X-Forwarded-For': getIp(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         }
-        self.id_seq = list()
         self.cookies = dict()           # "全局"cookies
+        self.name = name                # 个人姓名/公司名
+        self.card_num = card_num        # 身份证号/企业号
+        self.id_seq = list()            # 查询结果id序列
         self.valid_items = list()       # 有效id
         self.invalid_items = list()     # 无效/出错id
     # end
@@ -93,29 +102,23 @@ class ZhiXingSpider(object):
             return self.getCode(re_num) if re_num > 0 else False
     # end getNoteCode
 
-    def searchByCardNum(self, name, card_num, re_num=2):
+    def searchByCardNum(self, re_num=2):
         """ 通过身份证号/公司号查记录
         :return: 页总数
         """
-        self.card_num = card_num
-        self.name = name
         pw_code = self.getCode()
         if not pw_code:
             re_num -= 1
-            return self.searchByCardNum(name, card_num, re_num) if re_num > 0 else False
+            return self.searchByCardNum(re_num) if re_num > 0 else False
 
         form = {
             'searchCourtName': '全国法院（包含地方各级法院）',
             'selectCourtId': '1',
             'selectCourtArrange': '1',
-            'pname': '',
-            'cardNum': '68087331-4',
-            'j_captcha': '68965'
+            'pname': self.name,
+            'cardNum': self.card_num,
+            'j_captcha': pw_code
         }
-        form['j_captcha'] = pw_code
-        form['cardNum'] = card_num
-        form['pname'] = name
-
         url = 'http://zhixing.court.gov.cn/search/newsearch'
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
         options = {'method':'post', 'url':url, 'form':form, 'timeout':_timeout,
@@ -126,7 +129,7 @@ class ZhiXingSpider(object):
             checkout = self.checkOut(response.text)
             if not checkout:
                 re_num -= 1
-                return self.searchByCardNum(name, card_num, re_num)if re_num > 0 else False
+                return self.searchByCardNum(re_num)if re_num > 0 else False
             else:
                 page_num = 0
                 selector = etree.HTML(response.text)
@@ -137,10 +140,8 @@ class ZhiXingSpider(object):
                     page_num = int(ceil((tr_num)/10.0))
                     sys_ids = self.findIDs(selector)
                     self.id_seq.extend(sys_ids)
-
                 return page_num
     # end
-
 
     def findIDs(self, selector):
 
@@ -157,16 +158,12 @@ class ZhiXingSpider(object):
             return self.changePage(page_i, re_num) if re_num > 0 else False
 
         form = {
-            'currentPage': '2',
+            'currentPage': page_i,
             'selectCourtId': '1',
             'selectCourtArrange': '1',
-            'pname': '',
-            'cardNum': '68087331-4'
+            'pname': self.name,
+            'cardNum': self.card_num
         }
-        form['currentPage'] = page_i
-        form['cardNum'] = self.card_num
-        form['pname'] = self.name
-
         url = 'http://zhixing.court.gov.cn/search/newsearch?j_captcha=' + pw_code
         self.headers['Referer'] = 'http://zhixing.court.gov.cn/search/'
         options = {'method':'post', 'url':url, 'form':form, 'timeout':_timeout,
@@ -199,7 +196,7 @@ class ZhiXingSpider(object):
         # if checkout:
         #     print checkout.group()
         return False if checkout else True
-
+    # end
 
     def saveErrID(self, sys_id, err_type):
         """ 保存出错的id,和对应的错误类型
@@ -214,7 +211,6 @@ class ZhiXingSpider(object):
         self.invalid_items.append(err_item)
         return False
     # end
-
 
     def getJson(self, sys_id, re_num=2):
         """  获得id对应的被执行信息（json格式）
@@ -268,7 +264,7 @@ class ZhiXingSpider(object):
 # class
 
 
-def zhixingSearchAPI(name='', card_num=''):
+def zhixingSearchAPI(name='', card_num='', api_type=1):
     """ 根据身份证号/企业号查询接口
     :param card_num:身份证号/企业号
     :return: dict(t_zhixing_valid=[], t_zhixing_invalid=[])
@@ -277,16 +273,19 @@ def zhixingSearchAPI(name='', card_num=''):
     if not name and not name:
         raise ValueError
 
-    spider = ZhiXingSpider()
-    page_num = spider.searchByCardNum(name, card_num)
+    spider = ZhiXingSpider(name, card_num)
+    page_num = spider.searchByCardNum()
 
     if page_num > 1:
         for page in  range(2, page_num+1):
             spider.changePage(page)
 
     if spider.id_seq:
-        for sys_id in spider.id_seq:
-            spider.getJson(sys_id)
+        if api_type == 1:
+            print u'这里要换一种写法'
+        else:
+            for sys_id in spider.id_seq:
+                spider.getJson(sys_id)
 
     result = spider.saveItems()
     clawLog(spider.id_seq, result)
