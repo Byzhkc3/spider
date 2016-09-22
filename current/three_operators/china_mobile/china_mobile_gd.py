@@ -29,8 +29,8 @@ import three_operators.china_mobile.configuration.columns as config
 from public import userAgent, basicRequest
 
 
-_time_usual = 10
-_time_special = 60
+_time_usual = 100
+_time_special = 200
 
 class ChinaMobile_GD(object):
     """中国移动-广东爬虫"""
@@ -70,7 +70,8 @@ class ChinaMobile_GD(object):
     def getCode(self):
 
         url = 'http://gd.10086.cn/my/REALTIME_LIST_SEARCH.shtml'
-        browser = webdriver.PhantomJS(r'C:\driver\phantomjs.exe')
+        # browser = webdriver.PhantomJS(r'C:\driver\phantomjs-2.1.1-windows\bin\phantomjs.exe')
+        browser = webdriver.Chrome(r'C:\driver\chromedriver.exe')
         browser.get(url)
         browser.implicitly_wait(_time_usual)  # open the login page
         ChinaMobile_GD.timeSleep()
@@ -85,6 +86,7 @@ class ChinaMobile_GD(object):
             user_name_element.send_keys(self.phone_attr['phone'])
             browser.find_element_by_id('btn_get_dpw').click()
             self.browser = browser # 注意保存browser
+            #　动态密码已发送，10分钟内有效。
             print u'hi,动态验证码已经发送到手机:' + self.phone_attr['phone']
             return 2000
     # def
@@ -104,8 +106,9 @@ class ChinaMobile_GD(object):
 
         dynamic_pw_element.send_keys(self.phone_attr['phone_pwd'])
         login_element.click()  # login after click
-        self.browser.implicitly_wait(_time_usual)
-        ChinaMobile_GD.timeSleep(2, 3)
+        t_begin = time.time()
+        self.browser.implicitly_wait(_time_special)
+        print u'这里究竟花费了多长时间呀:{0}'.format(time.time()-t_begin)
         return self.judgeLogin()  # 登陆态判断
     # def
 
@@ -126,11 +129,14 @@ class ChinaMobile_GD(object):
         except (NoSuchElementException, WebDriverException):
             return 2000
         else:
+            print type(tips),len(tips)
             if getErrorByMatch(r'密码', tips):
                 print 'pw error'
                 return 4401  # 密码错误
             elif getErrorByMatch(r'动态密码', tips):
                 return 4402  # 动态码错误
+            elif tips == '':
+                return 2000
             else:
                 raise Exception(u'未知错误')
     # def
@@ -255,9 +261,9 @@ class ChinaMobile_GD(object):
 
         if 'call_date' in key:
              # '04-01 11:18:50' 对时间进行分割
-            temp =  temp['call_date'].split(' ')
-            temp['call_date'] = '2016-' + temp[0]
-            temp['call_time'] = temp[1]
+            date_time =  temp['call_date'].split(' ')
+            temp['call_date'] = '2016-' + date_time[0]
+            temp['call_time'] = date_time[1]
     # end
 
     def getFiveMonthCall(self):
