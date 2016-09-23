@@ -20,7 +20,7 @@ create table `t_operator_user`(
     `product_name` varchar(64) not null comment '套餐',
     `level` varchar(32) not null comment '用户等级',
     `open_date` varchar(16) default null comment '入网时间/认证时间',
-    `balance` float default null comment '账户余额',
+    `balance` varchar(16) default null comment '账户余额',
     
     `user_valid` tinyint default 1 comment '用户当前状态[有效期1,其他0]',
     
