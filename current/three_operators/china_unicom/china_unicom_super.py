@@ -399,8 +399,9 @@ if __name__ == '__main__':
     from three_operators.necessary.phone_attr import getAttributes
 
     t_begin = time.time()
-    phone_attr = getAttributes('13267175437')
-    if phone_attr:
+    attr = getAttributes('13267175437')
+    if attr['code'] == 2000:
+        phone_attr = attr['data']
         phone_attr['password'] = '251314'
         result = chinaUnicomAPI(phone_attr)
         for item in result.items():

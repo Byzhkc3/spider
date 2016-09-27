@@ -285,7 +285,23 @@ def makeDirs(dirs=None):
 # end
 
 
+def returnResult(code, desc, data):
+    """ 定义统一格式的返回
+    :param code: 状态码
+    :param desc: 描述
+    :param data: 数据/内容
+    :return:
+    """
+    return {
+        'code': code,
+        'desc': desc,
+        'data': data,
+        'time': time.time()
+    }
+# end
+
+
+
 if __name__ == '__main__':
-    makeDirs()
-    # print getUniqueFileName(2)
-    # clawLog([1,2,3],'完成入库：有效信息1，错误信息49')
+    result = returnResult(2000, u'测试调用', {'a':1, 'b':2})
+    print result
