@@ -12,7 +12,8 @@ from requests.utils import dict_from_cookiejar
 from gevent import monkey;monkey.patch_all()
 from three_operators.china_unicom.addtional.unicom_date import getDateSuq
 
-from public.share_func import userAgent, basicRequest, checkParamFormat,searchPhoneInfo
+from public.share_func import userAgent, basicRequest
+from three_operators.share_package.share_package import  checkParamFormat,searchPhoneInfo
 
 
 class PersonUnicom(object):
