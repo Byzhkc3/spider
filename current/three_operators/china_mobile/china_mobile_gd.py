@@ -83,15 +83,15 @@ class ChinaMobile_GD(object):
             self.browser = webdriver.Chrome(r'C:\driver\chromedriver.exe')
             self.browser.get(url)
             self.browser.implicitly_wait(_time_usual)  # open the login page
+            return True
+
+        def acquireCode():
+
             try:
                 self.browser.switch_to.frame('iframe_login_pop')
             except NoSuchFrameException as frame_ex:
                 print frame_ex
-                return False
-            else:
-                return True
-
-        def acquireCode():
+                sys.exit(0)
 
             user_name_element = self.browser.find_element_by_id('mobile')  # 手机号框
             user_name_element.clear()
@@ -425,9 +425,10 @@ if __name__ == '__main__':
 
     from three_operators.necessary.phone_attr import getAttributes
 
-    phone_attr = getAttributes('15802027662')
+    attr = getAttributes('15802027662')
 
-    if phone_attr:
+    if attr['code'] == 2000:
+        phone_attr = attr['data']
         phone_attr['password'] = '20168888'  # 添加密码
         code_result = getNoteCode(phone_attr) # 获得手机动态码
 
