@@ -119,14 +119,14 @@ def basicRequest(options, resend_times=1):
     """
     keys = options.keys()
     options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-    # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
+    proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
 
     try:
         response = request(
             options['method'],
             options['url'],
             timeout = options['timeout'],
-            # proxies = proxies if 'proxies' not in keys else None,
+            proxies = proxies if 'proxies' not in keys else None,
             verify = options['verify'] if 'verify' in keys else False,
             data = options['form'] if 'form' in keys else None,
             params = options['params'] if 'params' in keys else None,
@@ -285,13 +285,31 @@ def makeDirs(dirs=None):
 # end
 
 
-def returnResult(code, desc, data):
+_code_desc = {
+    2000: u'流程成功',
+    4000: u'网络错误',
+    4100: u'解析错误',
+    4200: u'验证码无法识别',
+    4400: u'参数错误',
+    4500: u'账号错误',
+    4600: u'密码错误',
+    4610: u'手机动态码错误',
+    5000: u'对方服务器错误',
+    5500: u'对方服务器繁忙'
+}
+_code_keys = _code_desc.keys()
+
+def returnResult(code, data, desc=''):
     """ 定义统一格式的返回
     :param code: 状态码
     :param desc: 描述
     :param data: 数据/内容
     :return:
     """
+    if code not in _code_keys and desc=='':
+        raise ValueError(u'危险:未知的状态码描述不可缺省')
+    else:
+        desc = _code_desc[code] if desc == '' else desc
     return {
         'code': code,
         'desc': desc,
@@ -300,8 +318,7 @@ def returnResult(code, desc, data):
     }
 # end
 
-
-
 if __name__ == '__main__':
-    result = returnResult(2000, u'测试调用', {'a':1, 'b':2})
-    print result
+    result = returnResult(2000, {'a':1, 'b':2})
+    for k,v in result.items():
+        print k,v

@@ -21,14 +21,14 @@ from threadpool import ThreadPool, makeRequests
 
 from necessary.param_date import getDateSeq
 from configuration.columns import KEY_CONVERT_USER
-from public.share_func import userAgent, basicRequest, getTimestamp, clawLog, makeDirs
+from public.share_func import userAgent, basicRequest, getTimestamp, clawLog, makeDirs, returnResult
 
 
 _thread_num = 3
 
 class ChinaUnicom(object):
     """中国联通爬虫"""
-    def __init__(self):
+    def __init__(self, phone_attr):
         self.headers = {
             'Accept': '*/*',
             'User-Agent': userAgent(),
@@ -39,9 +39,10 @@ class ChinaUnicom(object):
         self.cookies  = dict()
         self.user_items = list()   # 用户信息
         self.call_items = list()   # 通话信息
+        self.phone_attr = phone_attr    # 手机基本信息
     # end
 
-    def loginSys(self, phone, password):
+    def loginSys(self):
         """ 登录流程(函数嵌套的方式)
         :return: sysCheckLogin()
         """
@@ -58,7 +59,7 @@ class ChinaUnicom(object):
                 self.cookies.update(dict_from_cookiejar(response.cookies))
                 return loginByJS()
             else:
-                return dict(result=4000, func='sysCheckLogin')
+                return dict(code=4000, func='sysCheckLogin')
         # end
 
         def loginByJS():
@@ -79,8 +80,8 @@ class ChinaUnicom(object):
             }
             params['req_time'] = getTimestamp()
             params['_'] = str(int(params['req_time'])+1)
-            params['userName'] = phone
-            params['password'] = password
+            params['userName'] = self.phone_attr['phone']
+            params['password'] = self.phone_attr['password']
 
             url = 'https://uac.10010.com/portal/Service/MallLogin'
             self.headers['Referer'] = 'http://uac.10010.com/portal/hallLogin'
@@ -90,7 +91,7 @@ class ChinaUnicom(object):
             if response:
                 return judgeLogin(response)
             else:
-                return dict(result=4000, func='loginByJS')
+                return dict(code=4000, func='loginByJS')
         # def
 
         def judgeLogin(response):
@@ -101,35 +102,25 @@ class ChinaUnicom(object):
             try:
                 code = re.search(r'resultCode:"(.*?)"', response.text).group(1)
             except (AttributeError,IndexError) as ex:
-                return dict(result=4000, func='judgeLogin')
+                return dict(code=4000, func='judgeLogin')
             else:
-                if code == '0000':      # 登录成功
-                    print 'loginSys finish'
+                code_hash = {
+                    '0000': 2000, # 流程成功
+                    '7007': 4600, # 密码错误
+                    '7999': 5500, # 对方服务器繁忙
+                    '7072': 4500, # 账号错误
+                    '7009': 4500  # 账号错误
+                }
+                if code in code_hash.keys():
                     self.cookies.update(dict_from_cookiejar(response.cookies))
-                    return dict(result=2000, error='no error' )
-
-                elif code == '7007':    # 密码出错
-                    print 'pw error'
-                    return dict(result=4401, error='pw error')
-
-                elif code == '7999':    # 系统繁忙
-                    print 'sys busy'
-                    return loginByJS()
-
-                elif code == '7072':    # 账号错误
-                    print 'name error'
-                    return dict(result=4400, error='user_name error')
-
-                elif code == '7009':
-                    print 'phone_num error'
-                    return dict(result=4404, error= 'phone_num not exist')
+                    return dict(code=code_hash[code])
                 else:
                     raise Exception('未知错误')
         # def
         return sysCheckLogin()
     # end
 
-    def getUserInfo(self, phone_attr):
+    def getUserInfo(self):
         """ 爬取用户信息
         :return: sysCheckLoginAgain()
         """
@@ -145,7 +136,7 @@ class ChinaUnicom(object):
             if response:
                 return getHeaderView()
             else:
-                return dict(result=4000, func='sysCheckLoginAgain')
+                return dict(code=4000, func='sysCheckLoginAgain')
         # def
 
         def getHeaderView():
@@ -158,10 +149,13 @@ class ChinaUnicom(object):
 
             response = basicRequest(options)
             if response:
-                phone_attr['balance'] = json.loads(response.text)['result']['account']
+                try:
+                    phone_attr['balance'] = json.loads(response.text)['result']['account']
+                except KeyError:
+                    phone_attr['balance'] = ''
                 return getUserRecord()
             else:
-                return dict(result=4000, func='getHeaderView')
+                return dict(code=4000, func='getHeaderView')
         # def
 
         def getUserRecord():
@@ -182,9 +176,10 @@ class ChinaUnicom(object):
                     if k in KEY_CONVERT_USER.keys():
                         columm_name = KEY_CONVERT_USER[k]
                         item[columm_name] = v
-                self.user_items.append(dict(item, **phone_attr))
+                del self.phone_attr['password']
+                self.user_items.append(dict(item, **self.phone_attr))
             else:
-                return dict(result=4000, func='clawCallRecords')
+                return dict(code=4000, func='clawCallRecords')
         # def
         print 'start claw user info'
         return sysCheckLoginAgain()
@@ -375,28 +370,26 @@ def chinaUnicomAPI(phone_attr):
     :param password: 全为数字的字符串(长度不少于6位)
     :return:
     """
-    makeDirs()
-    spider = ChinaUnicom()
-    login = spider.loginSys(phone_attr['phone'], phone_attr['password'])
-    if login['result'] != 2000:
-        return login
-
-    spider.getUserInfo(phone_attr)
-    spider.getCallInfo()
-
-    log = spider.saveItems()
-    clawLog(phone_attr, log)
-
-    return dict(
-        t_operator_user = spider.user_items,
-        t_operator_call = spider.call_items
-    )
+    # makeDirs()
+    spider = ChinaUnicom(phone_attr)
+    login = spider.loginSys()
+    if login['code'] != 2000:
+        return returnResult(login['code'], data={})
+    else:
+        spider.getUserInfo()
+        spider.getCallInfo()
+        spider.saveItems()
+        # clawLog(phone_attr, log)
+        return dict(
+            t_operator_user = spider.user_items,
+            t_operator_call = spider.call_items
+        )
 # end
 
 
 if __name__ == '__main__':
 
-    from three_operators.necessary.phone_attr import getAttributes
+    from operator_spider.necessary.get_phone_attr import getAttributes
 
     t_begin = time.time()
     attr = getAttributes('13267175437')

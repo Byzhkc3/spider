@@ -20,8 +20,8 @@ import public.db_config as DB
 from selenium import webdriver
 from selenium.common.exceptions import *
 from public import userAgent, basicRequest
-from three_operators.china_mobile.necessary.mobile_month import getMonthSeq
-import three_operators.china_mobile.configuration.columns as config
+from operator_spider.china_mobile.necessary.mobile_month import getMonthSeq
+import operator_spider.china_mobile.configuration.columns as config
 
 _time_wait = 2
 _time_usual = 100
@@ -423,7 +423,7 @@ def loginSys(spider):
 
 if __name__ == '__main__':
 
-    from three_operators.necessary.phone_attr import getAttributes
+    from operator_spider.necessary.get_phone_attr import getAttributes
 
     attr = getAttributes('15802027662')
 

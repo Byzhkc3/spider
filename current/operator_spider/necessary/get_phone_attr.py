@@ -5,12 +5,6 @@ sys.path.append('../../')
 from public.share_func import basicRequest, returnResult
 
 
-_company_convert = {
-    u'中国联通': 1,
-    u'中国移动': 2,
-    u'中国电信': 3
-}
-
 def checkParamFormat(phone_num, password):
     """ 手机号、密码格式的检查
     :param phone_num: 手机号
@@ -26,6 +20,12 @@ def checkParamFormat(phone_num, password):
         return dict(result=1000, error="parameter's type error")
 # end
 
+
+_company_convert = {
+    u'中国联通': 1,
+    u'中国移动': 2,
+    u'中国电信': 3
+}
 
 def getAttributes(phone_num):
     """ 调用百度api获得手机的归属地
@@ -55,20 +55,20 @@ def getAttributes(phone_num):
                 'city': item['city'],
                 'company': company_type
             }
-            return returnResult(code=2000, desc=u'查询成功', data=data)
+            return returnResult(code=2000, data=data, desc=u'查询成功')
         except (KeyError, IndexError):
-            return returnResult(code=4500, desc=u'账号错误', data={})
+            return returnResult(code=4500, data={})
         except (ValueError, Exception):
-            return returnResult(code=4100, desc=u'解析异常', data={})
+            return returnResult(code=4100, data={})
     else:
-        return returnResult(code=4000, desc=u'网络异常', data={})
+        return returnResult(code=4000, data={})
 # end
 
 
 def searchPhoneInfo_Test():
     import time
     start = time.time()
-    result = getAttributes('1326717543')
+    result = getAttributes('15802027662')
     print 'api耗费时间为{0}秒'.format(time.time() - start )
     if result:
         for k,v in result.items():

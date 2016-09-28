@@ -1,5 +1,5 @@
 #coding=utf-8
-from necessary.phone_attr import getAttributes
+from necessary.get_phone_attr import getAttributes
 # 运营商入口
 
 
