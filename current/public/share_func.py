@@ -134,8 +134,8 @@ def basicRequest(options, resend_times=1):
             headers = options['headers'] if 'headers' in keys else None,
             stream =  options['stream'] if  'stream' in keys else False,
         )
-    except (ConnectTimeout, ReadTimeout, Timeout):
-        print 'timeout'
+    except (ConnectTimeout, ReadTimeout, Timeout) as ex:
+        print 'watch out, timeout:',ex
         if resend_times > 0:
             time.sleep(random.uniform(0,1))
             options['timeout'] += 1
@@ -143,16 +143,16 @@ def basicRequest(options, resend_times=1):
         else:
             return False
 
-    except ProxyError:
-        print 'proxyerror'
+    except ProxyError as ex:
+        print 'watch out, proxyerror:',ex
         if resend_times > 0:
             options['proxies'] = None
             return basicRequest(options, resend_times-1)
         else:
             return False
 
-    except SSLError:
-        print 'sslerror'
+    except SSLError as ex:
+        print 'watch out, SSLerror:',ex
         if resend_times > 0:
             options['verify'] = False
             return basicRequest(options, resend_times-1)
@@ -160,7 +160,7 @@ def basicRequest(options, resend_times=1):
             return False
 
     except (RequestException, Exception) as ex:
-        print 'other errot'
+        print 'watch out, other errot:',ex
         if resend_times > 0:
             time.sleep(random.uniform(1, 3))
             return basicRequest(options, resend_times-1)

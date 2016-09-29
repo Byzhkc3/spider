@@ -21,7 +21,8 @@ from threadpool import ThreadPool, makeRequests
 
 from necessary.param_date import getDateSeq
 from configuration.columns import KEY_CONVERT_USER
-from public.share_func import userAgent, basicRequest, getTimestamp, clawLog, makeDirs, returnResult
+from public.share_func import userAgent, basicRequest, \
+    getTimestamp, returnResult, clawLog, makeDirs
 
 
 _thread_num = 3
@@ -181,7 +182,6 @@ class ChinaUnicom(object):
             else:
                 return dict(code=4000, func='clawCallRecords')
         # def
-        print 'start claw user info'
         return sysCheckLoginAgain()
     # end
 
@@ -214,18 +214,11 @@ class ChinaUnicom(object):
 
         def coroutineClawPageCall(date_tuple, page_no=1, resend = 2):  #完成单次请求[存在网络繁忙则重传]
             """完成单次请求"""
-            params = { '_':'1468549625712', 'menuid':'000100030001'}
-            form = {'pageNo':'1', 'pageSize':'20', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
-
-            form['pageNo'] = page_no
-            form['beginDate'] = date_tuple[0]
-            form['endDate'] = date_tuple[1]
-            params['_'] = getTimestamp()
-
+            params = { '_':getTimestamp(), 'menuid':'000100030001'}
+            form = {'pageNo': page_no, 'pageSize':'20', 'beginDate':date_tuple[0], 'endDate':date_tuple[1]}
             url = 'http://iservice.10010.com/e3/static/query/callDetail'
             self.headers['Referer'] = 'http://iservice.10010.com/e3/query/call_dan.html?menuId=000100030001'
             options = {'method':'post', 'url':url, 'form':form, 'params':params, 'cookies':self.cookies, 'headers':self.headers}
-
             response = basicRequest(options)
             if response:
                 try:
@@ -250,7 +243,6 @@ class ChinaUnicom(object):
         def clawPageCall(date_tuple, page_no=1, resend = 2):  #完成单次请求[存在网络繁忙则重传]
             """完成单次请求"""
             params = { '_':'1468549625712', 'menuid':'000100030001'}
-            # form = {'pageNo':'1', 'pageSize':'100', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
             form = {'pageNo':'1', 'pageSize':'20', 'beginDate':'2016-07-01', 'endDate':'2016-07-18'}
             form['pageNo'] = page_no
             form['beginDate'] = date_tuple[0]
@@ -298,12 +290,10 @@ class ChinaUnicom(object):
     # end
 
     def parseCallInfo(self, text_seq):
-
         item = {
             'cert_num': self.user_items[0]['cert_num'],
             'phone': self.user_items[0]['phone']
         }
-
         for text in text_seq:
             try:
                 results = json.loads(text)['pageMap']['result']
@@ -341,6 +331,10 @@ class ChinaUnicom(object):
     # end
 
 
+    def getNoteInfo(self):
+        # 获得短信信息
+        pass
+
     def saveItems(self):
         """  保存数据到mysql
         :return: None
@@ -355,13 +349,14 @@ class ChinaUnicom(object):
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end
-
-    @staticmethod
-    def checkAttr(phone_attr):
-        if not isinstance(phone_attr, dict):
-            raise ValueError
-
 # class
+
+def checkAttr(phone_attr):
+    _key = ('phone', 'province', 'city', 'company', 'password')
+    if not isinstance(phone_attr, dict) or set(phone_attr.keys()) != set(_key):
+        return returnResult(4400, data={})
+    else: # 参数正确返回True
+        return True
 
 
 def chinaUnicomAPI(phone_attr):
@@ -371,26 +366,30 @@ def chinaUnicomAPI(phone_attr):
     :return:
     """
     # makeDirs()
+    check_param = checkAttr(phone_attr)
+    if check_param != True:
+        return check_param  # 返回参数错误
+
     spider = ChinaUnicom(phone_attr)
     login = spider.loginSys()
     if login['code'] != 2000:
-        return returnResult(login['code'], data={})
+        return returnResult(login['code'], data={}) # 返回登陆错误信息
     else:
         spider.getUserInfo()
         spider.getCallInfo()
         spider.saveItems()
         # clawLog(phone_attr, log)
-        return dict(
+        data =  dict(
             t_operator_user = spider.user_items,
             t_operator_call = spider.call_items
         )
+        return returnResult(2000, data=data)  # 返回爬去结果
 # end
 
 
 if __name__ == '__main__':
-
+    # demo
     from operator_spider.necessary.get_phone_attr import getAttributes
-
     t_begin = time.time()
     attr = getAttributes('13267175437')
     if attr['code'] == 2000:
