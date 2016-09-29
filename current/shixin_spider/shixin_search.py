@@ -15,8 +15,8 @@ from requests.utils import dict_from_cookiejar
 
 import public.db_config as DB
 import configuration.columns as config
-from public.share_func import userAgent, \
-    basicRequest, getIp, recogImage, makeDirs, clawLog
+from public.share_func import userAgent, basicRequest,\
+    getIp, recogImage, makeDirs, clawLog, returnResult
 
 
 class ShiXinSpider(object):
@@ -133,14 +133,14 @@ class ShiXinSpider(object):
             text = selector.xpath('//div[@id="ResultlistBlock"]/div/text()')
             text = ''.join(text).replace('\n','').replace('\t','').encode('utf-8')
             try:
-                tr_num = int(re.search('共(\d+)', text).group(1))
+                tr_num = int(re.search('共(\d+)', text).group(1)) #　记录总数
             except AttributeError:
                 re_num -= 1
                 pw_code = self.getCode()
                 return self.searchByCardNumAndName(pw_code, re_num) if re_num > 0 else False
             else:
                 if tr_num > 0:
-                    page_num = int(ceil((tr_num)/10.0))
+                    page_num = int(ceil((tr_num)/10.0)) # 总页数
                     sys_ids = self.findIDs(selector)
                     self.id_seq.extend(sys_ids)
                 return dict(page_num=page_num, pw_code=pw_code)
@@ -250,21 +250,19 @@ def shixinSearchAPI(name, card_num='', api_type=1):
     :return: dict(t_shixin_valid=[], t_shixin_invalid=[]) / {}
     """
     makeDirs()
-    if not name :
-        raise ValueError
 
     spider = ShiXinSpider(name, card_num)
     cookie = spider.getCookies()
-    if not cookie:
-        return {}
+    if not cookie: # 获取cookies识别
+        return returnResult(4000, data={})
 
     pw_code = spider.getCode()
-    if not pw_code:
-        return {}
+    if not pw_code: # 获取验证码识别
+        return returnResult(4200, data={})
 
     result = spider.searchByCardNumAndName(pw_code)
     if not result:
-        return {}
+        return returnResult(4800, data={})
 
     if result['page_num'] > 1:
         if api_type == 1:
@@ -289,10 +287,11 @@ def shixinSearchAPI(name, card_num='', api_type=1):
     log = spider.saveItems()
     clawLog(spider.id_seq, log)
 
-    return dict(
+    data = dict(
         t_shixin_valid=spider.valid_items,
         t_shixin_invalid=spider.invalid_items
     )
+    return returnResult(2000, data=data) # 流程成功
 # end
 
 
@@ -301,10 +300,10 @@ if __name__ == '__main__':
     t_begin = time.time()
     print time.ctime() + ':\t' + 'Test start, running'
 
-    # card_num = '72217220X'
-    # name = '遵义侨丰房地产开发有限责任公司'
-    card_num = ''
-    name = u'曹俊元'
+    card_num = '72217220X'
+    name = '遵义侨丰房地产开发有限责任公司'
+    # card_num = ''
+    # name = u'毛泽东'
 
     results = shixinSearchAPI(name, card_num)
     print time.ctime() + ':\t' + 'Test over, cost: {0} seconds\n\n'.format(time.time()-t_begin)

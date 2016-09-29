@@ -18,11 +18,11 @@ from lxml import etree
 import public.db_config as DB
 import configuration.columns as config
 from requests.utils import dict_from_cookiejar
-from public.share_func import basicRequest, \
-    userAgent, getIp, recogImage, clawLog, makeDirs
+from public.share_func import basicRequest, userAgent,\
+    getIp, recogImage, clawLog, makeDirs, returnResult
 
 
-_timeout = 5
+_timeout = 10
 
 class ZhiXingSpider(object):
     """根据身份证号/企业号查询执行信息,流程版"""
@@ -271,7 +271,7 @@ def zhixingSearchAPI(name='', card_num='', api_type=1):
     """
     makeDirs()
     if not name and not name:
-        raise ValueError
+        return returnResult(4400, data={})
 
     spider = ZhiXingSpider(name, card_num)
     page_num = spider.searchByCardNum()
@@ -290,10 +290,11 @@ def zhixingSearchAPI(name='', card_num='', api_type=1):
     result = spider.saveItems()
     clawLog(spider.id_seq, result)
 
-    return dict(
+    data =  dict(
         t_zhixing_valid = spider.valid_items,
         t_zhixing_invalid = spider.invalid_items
     )
+    return returnResult(2000, data=data) # 流程成功
 # end
 
 

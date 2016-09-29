@@ -135,6 +135,7 @@ def basicRequest(options, resend_times=1):
             stream =  options['stream'] if  'stream' in keys else False,
         )
     except (ConnectTimeout, ReadTimeout, Timeout):
+        print 'timeout'
         if resend_times > 0:
             time.sleep(random.uniform(0,1))
             options['timeout'] += 1
@@ -143,6 +144,7 @@ def basicRequest(options, resend_times=1):
             return False
 
     except ProxyError:
+        print 'proxyerror'
         if resend_times > 0:
             options['proxies'] = None
             return basicRequest(options, resend_times-1)
@@ -150,6 +152,7 @@ def basicRequest(options, resend_times=1):
             return False
 
     except SSLError:
+        print 'sslerror'
         if resend_times > 0:
             options['verify'] = False
             return basicRequest(options, resend_times-1)
@@ -157,6 +160,7 @@ def basicRequest(options, resend_times=1):
             return False
 
     except (RequestException, Exception) as ex:
+        print 'other errot'
         if resend_times > 0:
             time.sleep(random.uniform(1, 3))
             return basicRequest(options, resend_times-1)
@@ -294,6 +298,7 @@ _code_desc = {
     4500: u'账号错误',
     4600: u'密码错误',
     4610: u'手机动态码错误',
+    4800: u'查询失败',
     5000: u'对方服务器错误',
     5500: u'对方服务器繁忙'
 }
