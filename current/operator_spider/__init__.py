@@ -1,1 +1,0 @@
-from necessary.get_phone_attr import getAttributes
