@@ -1,0 +1,130 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">var _BASEPATH_='https://ipcrs.pbccrc.org.cn/';</script>
+<script src="https://ipcrs.pbccrc.org.cn/js/pe.js" type="text/javascript"></script>
+
+
+
+
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=gbk" />
+		<title>个人信用信息服务平台  </title>
+		<link rel="stylesheet" type="text/css" href="https://ipcrs.pbccrc.org.cn/css/new.css" />
+		<link rel="stylesheet" type="text/css" href="https://ipcrs.pbccrc.org.cn/css/page.css" />
+		<link type="text/css" rel="stylesheet"  href="https://ipcrs.pbccrc.org.cn/css/public.css" />
+		<link type="text/css" href="https://ipcrs.pbccrc.org.cn/css/skb.css" rel="stylesheet" />
+		<script type="text/javascript" src="https://ipcrs.pbccrc.org.cn/js/skb.js"></script>
+		<script type="text/javascript" src="https://ipcrs.pbccrc.org.cn/js/jquery.js"></script>
+		<script type="text/javascript" src="https://ipcrs.pbccrc.org.cn/js/input_notice.js"></script>
+		<script type="text/javascript" src="https://ipcrs.pbccrc.org.cn/js/skb_1.js"></script>  
+		<script type="text/javascript" src="https://ipcrs.pbccrc.org.cn/page/login/js/loginreg.js"></script>  
+		<style>
+		.skb1{z-index:2000;border:2px solid #eeecff;}
+		.skbhead1{background-color:#ccc;color:#333}
+		.skbbody1{font-size:20px;text-align:center;vertical-align:middle; position:absolute; top:264px; left:146px;}
+		.skbbout1{background-color:#6bc6c6;color:#333}
+		.skbbover1{background-color:#0a96a6;color:#fff}
+		</style>
+	</head>
+
+<body>
+    <!--页面主体-->
+    <div class="now">&nbsp;&nbsp;<span>当前位置：</span><a href="https://ipcrs.pbccrc.org.cn/" target="_parent">首页</a><span> &gt; 用户登录</span></div>
+    <div id="content">
+        <div id="main">
+            
+            <div class="leftBar left">
+                <div style=" height:36px; line-height:36px; color:#202020; border-bottom:1px #c11000 solid;">
+                  <span style="font-size:16px; font-weight:bold; float:left">用户登录</span>
+                </div>
+                <form name="loginForm" method="post" action="/login.do" onsubmit="return check(this)"><input type="hidden" name="org.apache.struts.taglib.html.TOKEN" value="da7ebcebfa826c95c0eaaec7feb568fe"> 
+                <input type="hidden" name="method" value="login"/>
+                <input type="hidden" name="date" value="1468205909988"/>
+                	<div class="erro_div3">
+		      			<span>
+			      			
+		                        	<span id="_@MSG@_" class="p4">验证码输入错误,请重新输入<br/></span>
+		                    
+		                   	<span id="_error_field_"></>
+	                   	</span>
+	    			</div>
+                   <div class="form-group">
+                       <div class="lable lable1">登录名：</div>
+                       <div class="inputBox">
+                           <input type="text" maxlength="16" name="loginname" id="loginname" class="inputText text1 div_left" onfocus="displayYes(this);" onblur="displayNo(this);checkLoginName();"/>
+                           <span class="notice1 span-grey">请输入登录名</span>
+                           <span class="span-grey" id="loginNameInfo"></span>
+                       </div>	                        
+                       <div class="login_forget">
+                      	 <a href="https://ipcrs.pbccrc.org.cn/findLoginName.do?method=init" target="_self" class="left">找回登录名</a>	
+                      	 <a href="https://ipcrs.pbccrc.org.cn/deleteUser.do?method=init" style="margin-left:80px;display:inline;" class="left" target="_self">用户销户</a>
+                       </div>
+                   </div>
+                   <div class="form-group">
+                       <div class="lable lable1">密&nbsp; 码：</div>
+                       <div class="inputBox position_re">
+                           <input type="password" maxlength="20" name="password" id="password" class="inputText text1 div_left" onfocus="displayYes(this);"  onblur="displayNo(this);checkPassword();" />
+                           <label class="login_codekey" ><img src="https://ipcrs.pbccrc.org.cn/images/new_images/keyboard.png" onclick="changkb1();"style="cursor:pointer" alt="打开软键盘"/></label>
+                           <span class="notice1 span-grey">请输入登录密码</span>
+                           <span class="span-grey" id="passwordInfo"></span>
+                       </div>
+                       <div class="login_forget"><a href="https://ipcrs.pbccrc.org.cn/resetPassword.do?method=init" target="_self">忘记密码？</a></div>
+                   </div>
+                   <div class="form-group">
+                       <div class="lable lable1">验证码：</div>
+                       <div>
+                       		<input class = "inputText text3 left" maxLength="6" type="text" id="_@IMGRC@_" name="_@IMGRC@_" onfocus="if(document.getElementById('_@MSG@_')!=null)document.getElementById('_@MSG@_').innerHTML='';">
+<img src="/imgrc.do?0.9333206415065184" id="imgrc" class = "yzm_img"/>
+<a class = "yzm_a" href="###" onclick="document.getElementById('imgrc').src='/imgrc.do?a='+new Date().getTime()+';'">看不清，换一个</a>
+<script>document.getElementById('imgrc').style.display='';</script>
+
+                       		<span class="span-grey" id="imageCodeInfo" style="width:110px;"></span>
+                       	</div>
+                       <div style="clear:both"></div>
+                   </div>
+                   <div class="form-group mar_top_30">
+                       <div class="lable lable1"></div>
+                       <div class="inputBox">
+                          	<input type="submit" class="inputBtn btn2" value="登录"/>
+                       </div>
+                       
+                   </div>
+                   </form>
+            </div>
+            <div class="rightBar">
+                <h3>新用户注册</h3>
+                    <form name="userForm" method="post" action="/userReg.do"><input type="hidden" name="org.apache.struts.taglib.html.TOKEN" value="da7ebcebfa826c95c0eaaec7feb568fe">
+                    	<input type="hidden" name="method" value="initReg"/>
+	                    <div class="form-group" style="margin-top:40px;">
+	                        <!-- <div class="lable lable2"></div> -->
+	                        <div class="inputBox">
+	                            <input type="submit" class="inputBtn btn2" value="新用户注册" />
+	                        </div>
+	                    </div>
+                    </form>
+                    <div style="clear:both"></div>
+                    <div class="margin_top_40"></div>
+                <h3>注册流程</h3>
+                <p>填写身份信息  &gt; 补充用户信息  &gt; 完成注册</p>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+
+</body>
+</html>
+<script src="https://ipcrs.pbccrc.org.cn/js/inputAutoCompleteOff.js" type="text/javascript"></script>
