@@ -15,7 +15,7 @@ from spider import chinaUnicomAPI # 联通
 from spider import getNoteCode, loginSys  # 移动
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root@localhost:3306/spider'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
 app.secret_key = 'spider'
 # 工作MySql路径
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
