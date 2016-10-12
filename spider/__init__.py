@@ -1,4 +1,0 @@
-from shixin_spider import shixinSearchAPI
-from zhixing_spider import zhixingSearchAPI
-from operator_spider import getAttributes, chinaUnicomAPI
-from phone_book import phonebookSpiderAPI
