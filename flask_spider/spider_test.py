@@ -70,7 +70,7 @@ def chinaUnicomAPI_Test():
     attr = getPhoneAttr('13267175437')
     if attr['code'] == 2000:
         phone_attr = attr['data']
-        phone_attr['password'] = 'moyihua251314'
+        phone_attr['password'] = '201688'
         result = chinaUnicomAPI(phone_attr)
         for item in result.items():
             print item
