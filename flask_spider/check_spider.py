@@ -1,5 +1,6 @@
 # coding=utf-8
 import json
+import pickle
 import sys
 from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for
@@ -15,13 +16,13 @@ from spider import chinaUnicomAPI # 联通
 from spider import getNoteCode, loginSys  # 移动
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
 app.secret_key = 'spider'
 # 工作MySql路径
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
 app.config['DEBUG'] = True
 db.init_app(app)
-manager = Manager(app)
+# manager = Manager(app)
 
 # 省份跟传过来的数字相匹配
 MAPPED = {"660": u"北京", "661": u"天津", "662": u"河北", "663": u"山西", "664": u"内蒙古", "665": u"辽宁",
@@ -61,7 +62,7 @@ def get_phone_data_by_month(date):
 
 @app.route('/get_data_union/<number>/<password>')
 def get_data_union(number, password):
-    """暂时返回默认结果 operator_output.html result是外部导入 益华编的字典 """
+    """暂时返回默认结果 operator_output.html result是外部导入的字典 """
     print 'in'
     session["phone_attr"]["password"] = password
     result = chinaUnicomAPI(session["phone_attr"])
@@ -75,12 +76,13 @@ def get_data_union(number, password):
 
 @app.route('/get_vcode')
 def get_vcode():
-    result = getNoteCode(session["phone_attr"])
+    # result = getNoteCode(session["phone_attr"])
+    result = dict(code=2000, temp =111)
     print result["code"]
     if result["code"] == 2000:
-        session['result'] = result["temp"]
+        # session['result'] = pickle.dumps(result["temp"])
         print result["temp"]
-        return u"验证码已经在路上"
+        return u"验证码已经已经发送到您的手机, 请输入验证码"
     else:
         return result["desc"]
 
@@ -221,4 +223,5 @@ def dishonest_person():
     return render_template('dishonest_person.html')
 
 if __name__ == '__main__':
-    manager.run()
+    # manager.run()
+    app.run(port=8001)

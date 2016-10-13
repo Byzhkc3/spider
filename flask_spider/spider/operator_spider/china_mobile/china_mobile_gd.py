@@ -27,10 +27,9 @@ _time_wait = 2
 _time_usual = 100
 _time_special = 200
 
-class ChinaMobile_GD(dict):
+class ChinaMobile_GD():
     """中国移动-广东爬虫"""
     def __init__(self, phone_attr):
-        super(int,self).__init__()
         self.__headers = {
             'Accept': '*/*',
             'User-Agent': userAgent(),
@@ -401,7 +400,8 @@ def updateNoteCode():
 def loginSys(spider):
     print
     if not isinstance(spider, ChinaMobile_GD):
-        raise 'obj error', ValueError(u'参数错误')
+        print 'obj error'
+        raise  ValueError(u'参数错误')
 
     login = spider.login()
     if login == 2000: # 登录成功

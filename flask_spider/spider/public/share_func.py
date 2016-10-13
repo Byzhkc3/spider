@@ -9,7 +9,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from io import BytesIO
-from time import strftime,localtime
+from time import strftime, localtime
 
 from PIL import Image
 from lxml import etree
@@ -84,7 +84,6 @@ def recogImage(content):
 #     except (IOError,Exception):
 #         return False
 # # end
-
 
 
 def userAgent():

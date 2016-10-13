@@ -87,7 +87,6 @@ def chinaMobileAPI_Test():
         phone_attr = attr['data']
         phone_attr['password'] = 'xxxxx'  # 添加密码
         code_result = getNoteCode(phone_attr) # 获得手机动态码
-
         if code_result['code'] == 2000:
             print u'获得手机动态码成功'
             # 获得手机动态码，并调用登陆
@@ -100,7 +99,6 @@ def chinaMobileAPI_Test():
                 print login_result
         else:
             print code_result
-
 
 if __name__ == '__main__':
     # pass
