@@ -2,7 +2,7 @@
 import json
 import pickle
 import sys
-from datetime import datetime
+from datetime import datetime, time
 from flask import Flask, render_template, request, session, redirect, url_for
 from models import db, Institution, DishonestExecutor, ExecutedPerson
 from sqlalchemy import distinct
@@ -19,8 +19,8 @@ app = Flask(__name__)
 
 app.secret_key = 'spider'
 # 工作MySql路径
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
 app.config['DEBUG'] = True
 db.init_app(app)
 manager = Manager(app)
@@ -225,8 +225,33 @@ def dishonest_person():
                 return render_template('not_found_message.html')
     return render_template('dishonest_person.html')
 
+def credit_report_search(name, password, auth_code):
+    return {
+        'code': 2000,
+        'desc': 'ok',
+        'data': 'path', # html的路径,文件名已用户名进行命令
+        'time': time.time()
+    }
 
+@app.route('/credit_report', methods=['GET', 'POST'])
+def credit_report():
+    """执行人视图 GET直接返回查询页面 POST则分析并返回解析结果"""
+    # zhouhuatang110
+    # ling920716
+    # 身份验证吗：uj6abb
+    if request.method == 'POST':
+        name = request.form.get('name') # 用户名
+        password = request.form.get('password')
+        auth_code = request.form.get('auth_code')  # 身份验证码
+        # 法院名称等待操作
+        result = credit_report_search(name, password, auth_code)
+        if result['code'] == 2000:
+            return render_template(result['data'])
+        else:
+            return result['desc']
+    return render_template('credit_report.html')
 
 
 if __name__ == '__main__':
-    manager.run()
+    # manager.run()
+    app.run(host='127.0.0.1', port=9000)
