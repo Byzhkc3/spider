@@ -65,12 +65,14 @@ def phonebookSpiderAPI_Test():
 
 
 # 测试-联通接口
+# 账号1：'13267175437'：'201688'
+# 账号2： 15572031603    150725
 def chinaUnicomAPI_Test():
     t_begin = time.time()
-    attr = getPhoneAttr('13267175437')
+    attr = getPhoneAttr('15572031603')
     if attr['code'] == 2000:
         phone_attr = attr['data']
-        phone_attr['password'] = '201688'
+        phone_attr['password'] = '150725'
         result = chinaUnicomAPI(phone_attr)
         for item in result.items():
             print item

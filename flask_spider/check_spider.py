@@ -16,13 +16,14 @@ from spider import chinaUnicomAPI # 联通
 from spider import getNoteCode, loginSys  # 移动
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
+
 app.secret_key = 'spider'
 # 工作MySql路径
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
 app.config['DEBUG'] = True
 db.init_app(app)
-# manager = Manager(app)
+manager = Manager(app)
 
 # 省份跟传过来的数字相匹配
 MAPPED = {"660": u"北京", "661": u"天津", "662": u"河北", "663": u"山西", "664": u"内蒙古", "665": u"辽宁",
@@ -63,19 +64,22 @@ def get_phone_data_by_month(date):
 @app.route('/get_data_union/<number>/<password>')
 def get_data_union(number, password):
     """暂时返回默认结果 operator_output.html result是外部导入的字典 """
-    print 'in'
     session["phone_attr"]["password"] = password
     result = chinaUnicomAPI(session["phone_attr"])
     if result["code"] == 2000:
-        session["phone_result"] = result["data"]
-        date = datetime.now().strftime("%Y-%m")
-        return redirect(url_for("get_phone_data_by_month", date=date))
+        print result['data']
+        return str(result['data'])
+        # print result['data']
+        # session["phone_result"] = result["data"]
+        # date = datetime.now().strftime("%Y-%m")
+        # return redirect(url_for("get_phone_data_by_month", date=date))
     else:
         return '&' + result["desc"]
 
 
 @app.route('/get_vcode')
 def get_vcode():
+    """中国移动-获得动态手机验证码"""
     # result = getNoteCode(session["phone_attr"])
     result = dict(code=2000, temp =111)
     print result["code"]
@@ -98,7 +102,6 @@ def get_data_mobile(number, password, vcode):
         date = datetime.now().strftime("%Y-%m")
         return redirect(url_for("get_phone_data_by_month", date=date))
     else:
-
         return '&' + result["desc"]
 
 
@@ -222,6 +225,8 @@ def dishonest_person():
                 return render_template('not_found_message.html')
     return render_template('dishonest_person.html')
 
+
+
+
 if __name__ == '__main__':
-    # manager.run()
-    app.run(port=8001)
+    manager.run()

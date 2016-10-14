@@ -398,7 +398,7 @@ def updateNoteCode():
 
 # 登陆系统
 def loginSys(spider):
-    print
+
     if not isinstance(spider, ChinaMobile_GD):
         print 'obj error'
         raise  ValueError(u'参数错误')

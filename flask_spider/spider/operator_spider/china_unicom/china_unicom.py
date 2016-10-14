@@ -171,7 +171,11 @@ class ChinaUnicom(object):
             if response:
                 item = dict()
                 result = json.loads(response.text)['result']
-                item['user_valid'] = 1 if result['usercirclestatus'] == u'有效期' else 0
+                try:
+                    item['user_valid'] = 1 if result['usercirclestatus'] == u'有效期' else 0
+                except KeyError:
+                    item['user_valid'] = 1
+
                 for k, v in result['MyDetail'].items():
                     if k in KEY_CONVERT_USER.keys():
                         columm_name = KEY_CONVERT_USER[k]
