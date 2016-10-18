@@ -14,6 +14,7 @@ from spider.public import  userAgent, basicRequest, xpathText
 
 
 class CreditReport(object):
+
     def __init__(self,name, password, auth_code):
         '''Initialization Parameters'''
         self.__headers = {
@@ -80,7 +81,8 @@ class CreditReport(object):
         img = Image.open(file)
         img = (img.convert('L')).resize((200,65))
         result = image_to_string(img).strip()
-        result = result if result.isdigit() else False
+        print result
+        result = result if result.isalnum() else False
         img.close()
         file.close()
         return result
@@ -219,9 +221,10 @@ class CreditReport(object):
 
         response = basicRequest(options)
         if response:
+            file_name = self.__section['user_name'] + '.html'
+            self.saveHtml(response.text, file_name)
             # report_result = clawCreditReport(etree.HTML(response.text))
             # print report_result
-
             self.logoutSys()
         else:
             return dict(result=4000, func='acquireReport')
@@ -244,7 +247,6 @@ class CreditReport(object):
         with open(file_name, 'w') as f:
             f.write(text)
     # end
-
 
     def logoutSys(self):
         '''Logout the system'''
@@ -274,13 +276,9 @@ def creditPersonAPI(name, password, auth_code):
     return  person.visitSys()
 # end
 
-def testSave():
-    with open(r'D:\github\moyh_work\flask_spider\templates\Luocx.html', 'r') as f:
-        text = f.read()
-    demo = CreditReport(1,2,3)
-    demo.saveHtml(text, 'test.html')
-
 
 if __name__ == '__main__':
-    testSave()
-
+    name = 'zhouhuatang110!'
+    password = 'ling920716!'
+    auth_code = 'fckcag'
+    print creditPersonAPI(name, password, auth_code)
