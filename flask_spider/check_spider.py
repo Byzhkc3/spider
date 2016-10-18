@@ -1,5 +1,9 @@
 # coding=utf-8
 import json
+import sys,os,random
+import sys
+reload( sys )
+sys.setdefaultencoding('utf-8')
 import pickle
 import sys
 from datetime import datetime, time
@@ -244,12 +248,14 @@ def credit_report():
         password = request.form.get('password')
         auth_code = request.form.get('auth_code')  # 身份验证码
         # 法院名称等待操作
-        result = credit_report_search(name, password, auth_code)
+        # result = credit_report_search(name, password, auth_code)
+        result = dict(code=2000, data='Luocx.html', desc=u'用户名错误')
         if result['code'] == 2000:
             return render_template(result['data'])
         else:
             return result['desc']
     return render_template('credit_report.html')
+    # return render_template('Luocx.html')
 
 
 if __name__ == '__main__':

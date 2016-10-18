@@ -11,7 +11,6 @@ Author:
 """
 import sys
 reload(sys)
-sys.path.append('../')
 sys.setdefaultencoding("utf-8")
 from copy import copy
 import time,json,random,re
@@ -425,7 +424,6 @@ def loginSys(spider):
 
 
 if __name__ == '__main__':
-
     from spider.operator_spider.necessary.get_phone_attr import getPhoneAttr
     attr = getPhoneAttr('15802027662')
     if attr['code'] == 2000:
