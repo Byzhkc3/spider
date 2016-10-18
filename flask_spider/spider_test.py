@@ -105,7 +105,7 @@ def chinaMobileAPI_Test():
 if __name__ == '__main__':
     # pass
     # getPhoneAttr_Test() #查询手机属性
-    chinaUnicomAPI_Test()  #中国联通
-    # shixinSearchAPI_Test() #失信被执行人
+    # chinaUnicomAPI_Test()  #中国联通
+    shixinSearchAPI_Test() #失信被执行人
     # zhixingSearchAPI_Test() #被执行人
 
