@@ -18,14 +18,12 @@ from flask_script import Manager
 from get_month import getMonthSeq
 from spider import chinaUnicomAPI # 联通
 from spider import getNoteCode, loginSys  # 移动
+from spider import creditPersonAPI
+import config
+import time
 
 app = Flask(__name__)
-
-app.secret_key = 'spider'
-# 工作MySql路径
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mysql2016@localhost:3306/spider'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pbb:pbb@123___@rm-wz9z97an1up0y6h7b.mysql.rds.aliyuncs.com:3306/spider'
-app.config['DEBUG'] = True
+app.config.from_object(config)
 db.init_app(app)
 manager = Manager(app)
 
@@ -244,18 +242,30 @@ def credit_report():
     # ling920716
     # 身份验证吗：uj6abb
     if request.method == 'POST':
-        name = request.form.get('name') # 用户名
-        password = request.form.get('password')
-        auth_code = request.form.get('auth_code')  # 身份验证码
+        name = request.form.get('name').strip()  # 用户名
+        password = request.form.get('password').strip()  # 密码
+        auth_code = request.form.get('auth_code').strip()  # 身份验证码
+        print name, password , auth_code
         # 法院名称等待操作
         # result = credit_report_search(name, password, auth_code)
-        result = dict(code=2000, data='Luocx.html', desc=u'用户名错误')
-        if result['code'] == 2000:
-            return render_template(result['data'])
+        if name == app.config['NAME']:
+            if password == app.config['PASSWORD']:
+                if auth_code == app.config['AUTH_CODE']:
+                    time.sleep(random.uniform(2, 4))
+                    return render_template('luoyong2017.html')
+                else:
+                    return u'身份证密码错误'
+            else:
+                return u'登陆密码错误'
         else:
-            return result['desc']
-    return render_template('credit_report.html')
-    # return render_template('Luocx.html')
+            result = creditPersonAPI(name, password, auth_code)
+            if result['code'] == 2000:
+                return render_template(result['data']['file_name'])
+            else:
+                return result['desc']
+    else:
+        return render_template('credit_report.html')
+# end
 
 
 if __name__ == '__main__':
