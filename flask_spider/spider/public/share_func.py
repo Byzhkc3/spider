@@ -118,14 +118,14 @@ def basicRequest(options, resend_times=1):
     """
     keys = options.keys()
     options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-    proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
+    # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
 
     try:
         response = request(
             options['method'],
             options['url'],
             timeout = options['timeout'],
-            proxies = proxies if 'proxies' not in keys else None,
+            # proxies = proxies if 'proxies' not in keys else None,
             verify = options['verify'] if 'verify' in keys else False,
             data = options['form'] if 'form' in keys else None,
             params = options['params'] if 'params' in keys else None,
@@ -294,6 +294,7 @@ _code_desc = {
     4100: u'解析错误',
     4200: u'验证码无法识别',
     4400: u'参数错误',
+    4444: u'简版征信身份验证码错误',
     4500: u'账号错误',
     4600: u'密码错误',
     4610: u'手机动态码错误',
