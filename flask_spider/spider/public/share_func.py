@@ -9,12 +9,11 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from io import BytesIO
-from time import strftime, localtime
-
 from PIL import Image
 from lxml import etree
 from requests import request
 from requests.exceptions import *
+from time import strftime, localtime
 from pytesseract import image_to_string
 from requests.packages.urllib3 import disable_warnings
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -52,6 +51,7 @@ def getUniqueFileName(num=2):
         result += str(random.randint(1, 200000))
     return getTimestamp() + result
 # end
+
 
 def recogImage(content):
     """ 识别只有数字的简单验证码
