@@ -10,6 +10,8 @@ Author:
     moyh
 """
 import sys
+from selenium.webdriver import DesiredCapabilities
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 from copy import copy
@@ -26,6 +28,11 @@ _time_wait = 2
 _time_usual = 100
 _time_special = 200
 
+
+capabilities = DesiredCapabilities.PHANTOMJS.copy()
+capabilities["phantomjs.page.settings.loadImages"] = False  # 禁止加载图片,默认加载
+phantom_path = r'C:\driver\phantomjs-2.1.1-windows\bin\phantomjs.exe'
+
 class ChinaMobile_GD():
     """中国移动-广东爬虫"""
     def __init__(self, phone_attr):
@@ -37,7 +44,7 @@ class ChinaMobile_GD():
             'Connection': 'keep-alive',
         }
         self.browser = None
-        self.cookies = dict()   # cookies
+        self.cookies = dict()        # cookies
         self.phone_attr = phone_attr # 手机属性
         self.user_items = list()   # 用户信息
         self.call_items = list()   # 通话信息
@@ -52,6 +59,21 @@ class ChinaMobile_GD():
             for cookie in cookies_seq:
                 cookie_dict[cookie['name']] = cookie['value']
         return cookie_dict
+    # end
+
+    def getLoginCookies(self, driver_cookies):
+        """ 获取登录后的cookies
+        :param driver_cookies:
+        :return:
+        """
+        if not isinstance(driver_cookies, list):
+            print u'获取登录后的cookies失败'
+        else:
+            login_cookies = dict()
+            for cookie in driver_cookies:
+                # print 'key:' + cookie['name'] + '---->' + 'value:' + cookie['value']
+                login_cookies[cookie['name']] = cookie['value']
+            return login_cookies
     # end
 
     @staticmethod
@@ -78,20 +100,18 @@ class ChinaMobile_GD():
 
         def openBrowser():
             url = 'http://gd.10086.cn/my/REALTIME_LIST_SEARCH.shtml'
-            # browser = webdriver.PhantomJS(r'C:\driver\phantomjs-2.1.1-windows\bin\phantomjs.exe')
+            # self.browser = webdriver.PhantomJS(r'C:\driver\phantomjs-2.1.1-windows\bin\phantomjs.exe')
             self.browser = webdriver.Chrome(r'C:\driver\chromedriver.exe')
             self.browser.get(url)
             self.browser.implicitly_wait(_time_usual)  # open the login page
             return True
 
         def acquireCode():
-
             try:
                 self.browser.switch_to.frame('iframe_login_pop')
             except NoSuchFrameException as frame_ex:
                 print frame_ex
                 sys.exit(0)
-
             user_name_element = self.browser.find_element_by_id('mobile')  # 手机号框
             user_name_element.clear()
             user_name_element.send_keys(self.phone_attr['phone'])
@@ -132,7 +152,6 @@ class ChinaMobile_GD():
     # def
 
     def login(self):
-
         user_name_element = self.browser.find_element_by_id('mobile')  # 用户名框
         password_element = self.browser.find_element_by_name('password')  # 密码框
         dynamic_pw_element = self.browser.find_element_by_name('dynamicCaptcha')  # 动态密码框
@@ -174,15 +193,16 @@ class ChinaMobile_GD():
     # def
 
     def clawAllInfo(self):
-        try:
-            self.browser.find_element_by_xpath('//div[@id="mathBox"]/div/a[1]').click()  # 点击查询
-            self.browser.implicitly_wait(_time_usual)
-        except NoSuchElementException as ex:
-            return 4000
+        # try:
+        #     self.browser.find_element_by_xpath('//div[@id="mathBox"]/div/a[1]').click()  # 点击查询
+        #     self.browser.implicitly_wait(_time_usual)
+        # except NoSuchElementException as ex:
+        #     return 4000
+        time.sleep(1)
         self.cookies = self.getCookies(self.browser.get_cookies())     # cookies更新
         if len(self.cookies) > 0:
             self.clawUserInfo()  # 爬取用户信息
-            self.clawCallInfo()  # 爬去通话记录
+            # self.clawCallInfo()  # 爬去通话记录
             return 2000
         else:
             return 4000
@@ -360,7 +380,6 @@ class ChinaMobile_GD():
         """
         valid_num  = len(self.user_items)
         invalid_num = len(self.call_items)
-
         if valid_num:
             DB.insertDictList(config.TABEL_NAME_1, config.COLUMN_USER, self.user_items)
         if invalid_num:
@@ -368,9 +387,7 @@ class ChinaMobile_GD():
 
         return u'完成入库：有效信息{0}，错误信息{1}'.format(valid_num, invalid_num)
     # end
-
 # class
-
 
 # 获取手机动态码
 def getNoteCode(phone_attr):
@@ -383,7 +400,6 @@ def getNoteCode(phone_attr):
 
     spider = ChinaMobile_GD(phone_attr)
     result = spider.getCode()
-    spider.browser.close()
     if result == 2000:
         return dict(code=2000, temp=spider) # 成功
     else:
@@ -430,12 +446,10 @@ if __name__ == '__main__':
         phone_attr = attr['data']
         phone_attr['password'] = '20168888'  # 添加密码
         code_result = getNoteCode(phone_attr) # 获得手机动态码
-
         if code_result['code'] == 2000:
             print u'获得手机动态码成功'
             # 获得手机动态码，并调用登陆
             code_result['temp'].phone_attr['phone_pwd'] = raw_input(u'请输入手机动态码:')
-
             login_result = loginSys(code_result['temp'])
             if login_result['code'] == 2000:
                 result = login_result['result']

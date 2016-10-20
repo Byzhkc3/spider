@@ -9,11 +9,12 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from io import BytesIO
+from time import strftime, localtime
+
 from PIL import Image
 from lxml import etree
 from requests import request
 from requests.exceptions import *
-from time import strftime, localtime
 from pytesseract import image_to_string
 from requests.packages.urllib3 import disable_warnings
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -51,7 +52,6 @@ def getUniqueFileName(num=2):
         result += str(random.randint(1, 200000))
     return getTimestamp() + result
 # end
-
 
 def recogImage(content):
     """ 识别只有数字的简单验证码
@@ -118,14 +118,14 @@ def basicRequest(options, resend_times=1):
     """
     keys = options.keys()
     options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-    # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
+    proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
 
     try:
         response = request(
             options['method'],
             options['url'],
             timeout = options['timeout'],
-            # proxies = proxies if 'proxies' not in keys else None,
+            proxies = proxies if 'proxies' not in keys else None,
             verify = options['verify'] if 'verify' in keys else False,
             data = options['form'] if 'form' in keys else None,
             params = options['params'] if 'params' in keys else None,
@@ -294,7 +294,6 @@ _code_desc = {
     4100: u'解析错误',
     4200: u'验证码无法识别',
     4400: u'参数错误',
-    4444: u'简版征信身份验证码错误',
     4500: u'账号错误',
     4600: u'密码错误',
     4610: u'手机动态码错误',
@@ -323,82 +322,7 @@ def returnResult(code, data, desc=''):
     }
 # end
 
-
-class Request(object):
-    proxies = None
-
-    @classmethod
-    def basic(cls, options, resend_times=1):
-        """ 根据参数完成request请求，成功则返回response,失败返回False
-        :param options: 请求参数
-        :param resend_times: 重发次数
-        :return: response对象或False
-        example:
-        options = {
-            'method':'get',
-            'url':'http://www.eprc.com.hk/EprcWeb/multi/transaction/login.do',
-            'form':None,
-            'params':None,
-            'cookies':None,
-            'headers':headers,
-        }
-        response = basicRequest(options)
-        """
-        keys = options.keys()
-        options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-        # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
-
-        try:
-            response = request(
-                options['method'],
-                options['url'],
-                timeout = options['timeout'],
-                proxies = Request.proxies,
-                verify = options['verify'] if 'verify' in keys else False,
-                data = options['form'] if 'form' in keys else None,
-                params = options['params'] if 'params' in keys else None,
-                cookies = options['cookies'] if 'cookies' in keys else None,
-                headers = options['headers'] if 'headers' in keys else None,
-                stream =  options['stream'] if  'stream' in keys else False,
-            )
-        except (ConnectTimeout, ReadTimeout, Timeout) as ex:
-            print 'watch out, timeout:',ex
-            if resend_times > 0:
-                time.sleep(random.uniform(0,1))
-                options['timeout'] += 1
-                return basicRequest(options, resend_times-1)
-            else:
-                return False
-
-        except ProxyError as ex:
-            print 'watch out, proxyerror:',ex
-            if resend_times > 0:
-                options['proxies'] = None
-                return basicRequest(options, resend_times-1)
-            else:
-                return False
-
-        except SSLError as ex:
-            print 'watch out, SSLerror:',ex
-            if resend_times > 0:
-                options['verify'] = False
-                return basicRequest(options, resend_times-1)
-            else:
-                return False
-
-        except (RequestException, Exception) as ex:
-            print 'watch out, other errot:',ex
-            if resend_times > 0:
-                time.sleep(random.uniform(1, 3))
-                return basicRequest(options, resend_times-1)
-            else:
-                print u'危险:请求参数为{options}存在未分类异常,错误为{ex}'.format(options=options, ex=ex)
-                return False
-        else:
-            return response
-    # end
-
 if __name__ == '__main__':
-    pass
-
-
+    result = returnResult(2000, {'a':1, 'b':2})
+    for k,v in result.items():
+        print k,v
