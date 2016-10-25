@@ -393,9 +393,9 @@ def chinaUnicomAPI(phone_attr):
 
 if __name__ == '__main__':
     # demo
-    from necessary.get_phone_attr import getAttributes
+    from spider.operator_spider.necessary.get_phone_attr import getPhoneAttr
     t_begin = time.time()
-    attr = getAttributes('13267175437')
+    attr = getPhoneAttr('13267175437')
     if attr['code'] == 2000:
         phone_attr = attr['data']
         phone_attr['password'] = '201688'

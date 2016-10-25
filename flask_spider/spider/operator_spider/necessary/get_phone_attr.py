@@ -35,7 +35,8 @@ def getPhoneAttr(phone_num):
         {'phone':'13267175437', 'province':'广东', 'city':'深圳', 'company':1}
         company值:中国联通1; 中国移动2; 中国电信3, 其他4
     """
-    phone_status = 6855 if str(phone_num)[0] == '0' else 6004
+    phone_num = str(phone_num)
+    phone_status = 6855 if phone_num[0] == '0' else 6004
     url = 'https://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php'
     params = {'query':phone_num, 'resource_id': phone_status}
     options = {'method': 'get', 'url': url, 'params': params}
