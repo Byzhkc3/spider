@@ -325,6 +325,7 @@ def returnResult(code, data, desc=''):
 
 
 class Request(object):
+
     proxies = None
 
     @classmethod
@@ -346,8 +347,6 @@ class Request(object):
         """
         keys = options.keys()
         options['timeout'] = options['timeout'] if 'timeout' in keys else 3
-        # proxies = {'http':'http://127.0.0.1:8888','https':'http://127.0.0.1:8888'}
-
         try:
             response = request(
                 options['method'],
@@ -397,6 +396,7 @@ class Request(object):
         else:
             return response
     # end
+# class
 
 if __name__ == '__main__':
     pass
