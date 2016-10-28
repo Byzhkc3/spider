@@ -1,9 +1,4 @@
 #coding=utf-8
-'''
-Goal: 将报告直接转码后保存为html文件, 便于web展示
-Date: 2016-10-17
-Author: moyh
-'''
 import os,random
 from io import BytesIO
 from PIL import Image
@@ -11,38 +6,41 @@ from lxml import etree
 from pytesseract import image_to_string
 from requests.utils import dict_from_cookiejar
 from spider.public import returnResult
-from spider.public import  userAgent, basicRequest, xpathText
+from spider.public import userAgent, basicRequest, xpathText
 
 
 class CreditReport(object):
-
-    def __init__(self,name, password, auth_code):
-        '''Initialization Parameters'''
-        self.__headers = {
+    """简版征信报告"""
+    def __init__(self, name, password, auth_code):
+        """
+        :param name: 用户名
+        :param password: 登陆密码
+        :param auth_code: 身份验证码
+        """
+        self.headers = {
             'Referer': None,
             'Accept-Language': 'zh-CN',
             'Connection': 'keep-alive',
             'Host': 'ipcrs.pbccrc.org.cn',
             'Accept-Encoding': 'gzip, deflate',
             'Accept': 'text/html, application/xhtml+xml, image/jxr, */*',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko'
+            'User-Agent': userAgent()
         }
-        self.__threshold = 10
-        self.__cookies  = None
-        self.__host = 'https://ipcrs.pbccrc.org.cn'
-        self.__headers['User-Agent'] = userAgent()
-        self.__section = dict(user_name=name, password=password, id_code=auth_code)
+        self.threshold = 10
+        self.cookies  = None
+        self.host = 'https://ipcrs.pbccrc.org.cn'
+        self.section = dict(user_name=name, password=password, id_code=auth_code)
     # end
 
     def visitSys(self):
         '''Visit the home page'''
         url = 'https://ipcrs.pbccrc.org.cn/'
         options = {'method':'get', 'url':url, 'form':None,
-                   'params':None, 'cookies':None, 'headers':self.__headers}
+                   'params':None, 'cookies':None, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
-            self.__cookies = dict_from_cookiejar(response.cookies)
+            self.cookies = dict_from_cookiejar(response.cookies)
             return self.visitLoginpage()
         else:
             return dict(result=4000, error='visitSys funciton')
@@ -52,9 +50,9 @@ class CreditReport(object):
     def visitLoginpage(self):
         '''Visit the login page'''
         url = 'https://ipcrs.pbccrc.org.cn/login.do?method=initLogin'
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/index1.do'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/index1.do'
         options = {'method':'get', 'url':url, 'form':None, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -64,7 +62,7 @@ class CreditReport(object):
 
             result = xpathText(response.text, path_dict)
             if result['date'] and result['code_url'] and result['token']:
-                code = self.getCode(self.__host+result['code_url'])
+                code = self.getCode(self.host+result['code_url'])
                 form_item = dict(token=result['token'], date=result['date'], code=code)
                 return self.loginSys(form_item)
             else:
@@ -92,7 +90,7 @@ class CreditReport(object):
     def getCode(self, url, save_path='./code'):
         '''Download code image and then invoke the recogImage function '''
         options = {'method':'get', 'url':url, 'form':None, 'stream':True,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -106,7 +104,7 @@ class CreditReport(object):
         '''Verify fail and download new picture'''
         url = 'https://ipcrs.pbccrc.org.cn/imgrc.do?a=' + str(random.randint(1467967606991,1767967607647))
         options = {'method':'get', 'url':url, 'form':None, 'stream':True,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -127,14 +125,14 @@ class CreditReport(object):
         }
         form['date'] = form_item['date']
         form['_@IMGRC@_'] = form_item['code']
-        form['password'] = self.__section['password']
-        form['loginname'] = self.__section['user_name']
+        form['password'] = self.section['password']
+        form['loginname'] = self.section['user_name']
         form['org.apache.struts.taglib.html.TOKEN'] = form_item['token']
 
         url = 'https://ipcrs.pbccrc.org.cn/login.do'
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/page/login/loginreg.jsp'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/page/login/loginreg.jsp'
         options = {'method':'post', 'url':url, 'form':form, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -142,8 +140,8 @@ class CreditReport(object):
             if error['error'] == None:
                 return self.welcomePage()
             elif error['error'] == 'code': # code error
-                if self.__threshold > 0:
-                    self.__threshold -= 1
+                if self.threshold > 0:
+                    self.threshold -= 1
                     form_item['code'] = self.updateCode()
                     return self.loginSys(form_item)
                 else:
@@ -172,9 +170,9 @@ class CreditReport(object):
     def welcomePage(self):
         '''Visit the welcome page afer login sucessfully'''
         url = 'https://ipcrs.pbccrc.org.cn/welcome.do'
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/login.do'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/login.do'
         options = {'method':'get', 'url':url, 'form':None, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -191,11 +189,11 @@ class CreditReport(object):
             'code':'e5pkaa',
             'reportformat':'21'
         }
-        form['code'] = self.__section['id_code']
+        form['code'] = self.section['id_code']
         url = 'https://ipcrs.pbccrc.org.cn/reportAction.do'
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/reportAction.do?method=queryReport'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/reportAction.do?method=queryReport'
         options = {'method':'post', 'url':url, 'form':form, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
@@ -214,15 +212,15 @@ class CreditReport(object):
             'tradeCode':'e5pkaa',
             'reportformat':'21'
         }
-        form['tradeCode'] = self.__section['id_code']
+        form['tradeCode'] = self.section['id_code']
         url = 'https://ipcrs.pbccrc.org.cn/simpleReport.do?method=viewReport'
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/reportAction.do?method=queryReport'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/reportAction.do?method=queryReport'
         options = {'method':'post', 'url':url, 'form':form, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:
-            file_name = self.__section['user_name'] + '.html'
+            file_name = self.section['user_name'] + '.html'
             if self.saveHtml(response.text, file_name) == True:
                 return dict(result=2000, file_name=file_name)
             else:
@@ -254,9 +252,9 @@ class CreditReport(object):
         '''Logout the system'''
         form = {'method':'loginOut'}
         url = 'https://ipcrs.pbccrc.org.cn/login.do?' + str(random.random())
-        self.__headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/top2.do'
+        self.headers['Referer'] = 'https://ipcrs.pbccrc.org.cn/top2.do'
         options = {'method':'post', 'url':url, 'form':form, 'params':None,
-                   'cookies':self.__cookies, 'headers':self.__headers}
+                   'cookies':self.cookies, 'headers':self.headers}
 
         response = basicRequest(options)
         if response:

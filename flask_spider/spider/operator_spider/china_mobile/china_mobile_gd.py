@@ -1,41 +1,30 @@
 #coding=utf-8
-"""
-Goal：
-    广东中国移动用户基本和通话记录的爬取和存储
-Problem：
-    1、通过selenium进行登录
-Date:
-    2016/7/28
-Author:
-    moyh
-"""
-import sys
-from selenium.webdriver import DesiredCapabilities
-
-reload(sys)
-sys.setdefaultencoding("utf-8")
 from copy import copy
 import time,json,random,re
 from lxml import etree
+import sys
 import spider.public.db_config as DB
 from selenium import webdriver
 from selenium.common.exceptions import *
 from spider.public import userAgent, basicRequest
 from necessary.mobile_month import getMonthSeq
 import configuration.columns as config
+from selenium.webdriver import DesiredCapabilities
+
 
 _time_wait = 2
 _time_usual = 100
 _time_special = 200
 
-
 capabilities = DesiredCapabilities.PHANTOMJS.copy()
-capabilities["phantomjs.page.settings.loadImages"] = False  # 禁止加载图片,默认加载
+capabilities["phantomjs.page.settings.loadImages"] = False
 phantom_path = r'C:\driver\phantomjs-2.1.1-windows\bin\phantomjs.exe'
 
 class ChinaMobile_GD():
     """中国移动-广东爬虫"""
+
     def __init__(self, phone_attr):
+        #param phone_attr: 手机归属信息
         self.__headers = {
             'Accept': '*/*',
             'User-Agent': userAgent(),
@@ -46,14 +35,16 @@ class ChinaMobile_GD():
         self.browser = None
         self.cookies = dict()        # cookies
         self.phone_attr = phone_attr # 手机属性
-        self.user_items = list()   # 用户信息
-        self.call_items = list()   # 通话信息
-        self.refresh_num = 3       # 更新峰值
+        self.user_items = list()     # 用户信息
+        self.call_items = list()     # 通话信息
+        self.refresh_num = 3         # 更新峰值
     # end
 
     @staticmethod
     def getCookies(cookies_seq):
-        # 转换cookies
+        """ 将selenium获得的cookie序列转为字典
+        :return: dict(key=value)
+        """
         cookie_dict = dict()
         if cookies_seq:
             for cookie in cookies_seq:
@@ -61,20 +52,6 @@ class ChinaMobile_GD():
         return cookie_dict
     # end
 
-    def getLoginCookies(self, driver_cookies):
-        """ 获取登录后的cookies
-        :param driver_cookies:
-        :return:
-        """
-        if not isinstance(driver_cookies, list):
-            print u'获取登录后的cookies失败'
-        else:
-            login_cookies = dict()
-            for cookie in driver_cookies:
-                # print 'key:' + cookie['name'] + '---->' + 'value:' + cookie['value']
-                login_cookies[cookie['name']] = cookie['value']
-            return login_cookies
-    # end
 
     @staticmethod
     def timeSleep(min=1, max=3):
@@ -104,6 +81,7 @@ class ChinaMobile_GD():
             self.browser = webdriver.Chrome(r'C:\driver\chromedriver.exe')
             self.browser.get(url)
             self.browser.implicitly_wait(_time_usual)  # open the login page
+            self.timeSleep()
             return True
 
         def acquireCode():
@@ -112,7 +90,7 @@ class ChinaMobile_GD():
             except NoSuchFrameException as frame_ex:
                 print frame_ex
                 sys.exit(0)
-            user_name_element = self.browser.find_element_by_id('mobile')  # 手机号框
+            user_name_element = self.browser.find_element_by_id('mobile')
             user_name_element.clear()
             user_name_element.send_keys(self.phone_attr['phone'])
             try:
@@ -127,7 +105,7 @@ class ChinaMobile_GD():
             else:
                 self.browser.implicitly_wait(_time_usual)  # open the login page
                 #　动态密码已发送，10分钟内有效。
-                time.sleep(_time_wait)
+                self.timeSleep()
                 try:
                     tips = self.browser.find_element_by_xpath('//span[@class="text"]').text.strip().encode('utf-8')
                     print [tips]
@@ -165,9 +143,7 @@ class ChinaMobile_GD():
 
         dynamic_pw_element.send_keys(self.phone_attr['phone_pwd'])
         login_element.click()  # login after click
-        t_begin = time.time()
         self.browser.implicitly_wait(_time_special)
-        print u'这里究竟花费了多长时间呀:{0}'.format(time.time()-t_begin)
         return self.judgeLogin()  # 登陆态判断
     # def
 
@@ -198,7 +174,7 @@ class ChinaMobile_GD():
         #     self.browser.implicitly_wait(_time_usual)
         # except NoSuchElementException as ex:
         #     return 4000
-        time.sleep(1)
+        self.timeSleep()
         self.cookies = self.getCookies(self.browser.get_cookies())     # cookies更新
         if len(self.cookies) > 0:
             self.clawUserInfo()  # 爬取用户信息
@@ -216,7 +192,8 @@ class ChinaMobile_GD():
             form = {'servCode': 'MY_BASICINFO'}
             url = 'http://gd.10086.cn/commodity/servicio/track/servicioDcstrack/query.jsps'
             self.__headers['Referer'] = 'http://gd.10086.cn/my/myService/myBasicInfo.shtml'
-            options = {'method':'post', 'url':url, 'form':form, 'cookies':self.cookies, 'headers':self.__headers}
+            options = {'method':'post', 'url':url, 'form':form,
+                       'cookies':self.cookies, 'headers':self.__headers}
 
             response = basicRequest(options)
             if response:
@@ -229,7 +206,8 @@ class ChinaMobile_GD():
             form = {'servCode':'MY_BASICINFO', 'operaType':'QUERY'}
             url = 'http://gd.10086.cn/commodity/servicio/servicioForwarding/queryData.jsps'
             self.__headers['Referer'] = 'http://gd.10086.cn/my/myService/myBasicInfo.shtml'
-            options = {'method':'post', 'url':url, 'form':form, 'cookies':self.cookies, 'timeout':30, 'headers':self.__headers}
+            options = {'method':'post', 'url':url, 'form':form,
+                       'cookies':self.cookies, 'timeout':30, 'headers':self.__headers}
 
             response = basicRequest(options)
             if response:
@@ -284,7 +262,8 @@ class ChinaMobile_GD():
                                 column_name = config.KEY_CONVERT_CALL[k]
                                 temp[column_name] = v
                     try:
-                        self.convertValues(temp)  # 入库修正
+                        # 入库修正
+                        self.convertValues(temp)
                     except Exception as ex:
                         print ex
                         for k,v in temp.items():
@@ -346,7 +325,8 @@ class ChinaMobile_GD():
             form['month'] = month
             url = 'http://gd.10086.cn/commodity/servicio/nostandardserv/realtimeListSearch/query.jsps'
             self.__headers['Referer'] = 'http://gd.10086.cn/my/REALTIME_LIST_SEARCH.shtml?dt=1469030400000'
-            options = {'method':'post', 'url':url, 'form':form, 'cookies':self.cookies, 'headers':self.__headers}
+            options = {'method':'post', 'url':url, 'form':form,
+                       'cookies':self.cookies, 'headers':self.__headers}
 
             response = basicRequest(options)
             if response:
@@ -364,7 +344,9 @@ class ChinaMobile_GD():
 
             form = dict(uniqueTag=unique_tag, monthListType='0')
             url = 'http://gd.10086.cn/commodity/servicio/nostandardserv/realtimeListSearch/ajaxRealQuery.jsps'
-            options = {'method':'post', 'url':url, 'form':form, 'cookies':self.cookies, 'timeout':20, 'headers':self.__headers}   # pay attention to "timeout"
+            # pay attention to "timeout"
+            options = {'method':'post', 'url':url, 'form':form,
+                       'cookies':self.cookies, 'timeout':20, 'headers':self.__headers}
             response = basicRequest(options)
             if response:
                 return response.text
@@ -389,11 +371,17 @@ class ChinaMobile_GD():
     # end
 # class
 
-# 获取手机动态码
+
 def getNoteCode(phone_attr):
-    """
-    :param phone_attr: {'phone':'15802027662', 'province':'广东', 'city':'广州', 'company':2, 'password' = '20168888'}
-    :return:
+    """ 获取手机动态码
+    :param phone_attr: {
+        'phone':'xxxxxxxxxx',
+        'province':'广东',
+        'city':'广州',
+        'company':2,
+        'password' = 'xxxxxxx'
+    }
+    :return: dict(code=xxx, temp=xxx)
     """
     if not isinstance(phone_attr, dict):
         raise ValueError(u'参数错误')
@@ -401,19 +389,16 @@ def getNoteCode(phone_attr):
     spider = ChinaMobile_GD(phone_attr)
     result = spider.getCode()
     if result == 2000:
-        return dict(code=2000, temp=spider) # 成功
+        return dict(code=2000, temp=spider)
     else:
-        return dict(code=4444, temp=None) # 失败
+        return dict(code=4444, temp=None)
+# end
 
-
-# 更新手机动态码
-def updateNoteCode():
-    pass
-
-
-# 登陆系统
 def loginSys(spider):
-
+    """ 登陆系统
+    :param spider: the object of ChinaMobile_GD
+    :return:
+    """
     if not isinstance(spider, ChinaMobile_GD):
         print 'obj error'
         raise  ValueError(u'参数错误')
@@ -423,7 +408,7 @@ def loginSys(spider):
         print u'登录成功'
         search = spider.clawAllInfo() # 爬取内容
         if search == 2000:
-            print '爬取内容成功'
+            print u'爬取内容成功'
             # print spider.saveItems()
             result=dict(
                 t_operator_user = spider.user_items,
@@ -437,20 +422,22 @@ def loginSys(spider):
         spider.browser.close()
         return dict(code=login, temp=None) # 密码错误4401,动态码错误4402
 
-
-
-if __name__ == '__main__':
+def testGD():
     from spider.operator_spider.necessary.get_phone_attr import getPhoneAttr
-    attr = getPhoneAttr('15802027662')
+
+    phone_num = raw_input(u'请输入广东移动手机号:')
+    attr = getPhoneAttr(phone_num)
     if attr['code'] == 2000:
         phone_attr = attr['data']
-        phone_attr['password'] = '20168888'  # 添加密码
+        phone_attr['password'] = raw_input(u'请输入服务密码：')
+
         code_result = getNoteCode(phone_attr) # 获得手机动态码
         if code_result['code'] == 2000:
             print u'获得手机动态码成功'
             # 获得手机动态码，并调用登陆
             code_result['temp'].phone_attr['phone_pwd'] = raw_input(u'请输入手机动态码:')
             login_result = loginSys(code_result['temp'])
+
             if login_result['code'] == 2000:
                 result = login_result['result']
                 print result
@@ -458,5 +445,9 @@ if __name__ == '__main__':
                 print login_result
         else:
             print code_result
+
+
+if __name__ == '__main__':
+    testGD()
 
 

@@ -364,7 +364,7 @@ def checkAttr(phone_attr):
 
 def chinaUnicomAPI(phone_attr):
     """
-    :param phone_attr: dict(phone=XX, province=XX, city=XX, company=XX, password=XX)
+    :param phone_attr: dict(phone=XX, province=XX,city=XX, company=XX, password=XX)
     :param password: 全为数字的字符串(长度不少于6位)
     :return:
     """
@@ -387,7 +387,8 @@ def chinaUnicomAPI(phone_attr):
             t_operator_call = spider.call_items,
             t_operator_note = list()
         )
-        return returnResult(2000, data=data)  # 返回爬去结果
+        # 返回爬取结果
+        return returnResult(2000, data=data)
 # end
 
 
